@@ -12,9 +12,7 @@ import com.squareup.moshi.JsonReader;
 import okio.Buffer;
 import okio.BufferedSource;
 
-import android.util.Log;
-
-final class J {
+public final class Parser {
 
   /**
    * Converts the given String to a
@@ -49,11 +47,11 @@ final class J {
           reader.beginObject();
         }
         catch (final IOException e) {
-          logger.log(e);
+          Logger.log(e);
           break;
         }
         catch (final JsonDataException e) {
-          logger.log(e);
+          Logger.log(e);
           break;
         }
         //noinspection unchecked
@@ -64,11 +62,11 @@ final class J {
           reader.beginArray();
         }
         catch (final IOException e) {
-          logger.log(e);
+          Logger.log(e);
           break;
         }
         catch (final JsonDataException e) {
-          logger.log(e);
+          Logger.log(e);
           break;
         }
         //noinspection unchecked
@@ -78,35 +76,7 @@ final class J {
     return null;
   }
 
-  private J() {}
-
-  private interface Logger {
-    void log(final Exception e);
-  }
-
-  static final Logger logger;
-  static {
-    boolean android;
-    try {
-      Class.forName("android.util.LogPrinter");
-      android = true;
-    }
-    catch (final ClassNotFoundException e) {
-      android = false;
-    }
-    if (android) {
-       logger = new Logger() {
-         @Override public void log(final Exception e) {
-           Log.e("J", e.getMessage(), e);
-         }
-       };
-    }
-    else {
-      logger = new Logger() {
-        @Override public void log(final Exception e) { e.printStackTrace(); }
-      };
-    }
-  }
+  private Parser() {}
 
   private static JsonReader.Token nextToken(final JsonReader reader) {
     if (reader == null) return null;
@@ -114,7 +84,7 @@ final class J {
       return reader.peek();
     }
     catch (final IOException e) {
-      logger.log(e);
+      Logger.log(e);
       return null;
     }
   }
@@ -179,11 +149,11 @@ final class J {
             name = reader.nextName();
           }
           catch (final IOException e) {
-            logger.log(e);
+            Logger.log(e);
             break;
           }
           catch (final JsonDataException e) {
-            logger.log(e);
+            Logger.log(e);
             break;
           }
           walk(reader, map, name);
@@ -194,11 +164,11 @@ final class J {
             reader.endObject();
           }
           catch (final IOException e) {
-            logger.log(e);
+            Logger.log(e);
             break;
           }
           catch (final JsonDataException e) {
-            logger.log(e);
+            Logger.log(e);
             break;
           }
           return map;
@@ -208,11 +178,11 @@ final class J {
             reader.skipValue();
           }
           catch (final IOException e) {
-            logger.log(e);
+            Logger.log(e);
             break;
           }
           catch (final JsonDataException e) {
-            logger.log(e);
+            Logger.log(e);
             break;
           }
         }
@@ -230,13 +200,13 @@ final class J {
           reader.beginObject();
         }
         catch (final IOException e) {
-          logger.log(e);
+          Logger.log(e);
           //noinspection unchecked
           ((Map)map).put(name, null);
           break;
         }
         catch (final JsonDataException e) {
-          logger.log(e);
+          Logger.log(e);
           //noinspection unchecked
           ((Map)map).put(name, null);
           break;
@@ -250,13 +220,13 @@ final class J {
           reader.beginArray();
         }
         catch (final IOException e) {
-          logger.log(e);
+          Logger.log(e);
           //noinspection unchecked
           ((Map)map).put(name, null);
           break;
         }
         catch (final JsonDataException e) {
-          logger.log(e);
+          Logger.log(e);
           //noinspection unchecked
           ((Map)map).put(name, null);
           break;
@@ -270,10 +240,10 @@ final class J {
           reader.nextNull();
         }
         catch (final IOException e) {
-          logger.log(e);
+          Logger.log(e);
         }
         catch (final JsonDataException e) {
-          logger.log(e);
+          Logger.log(e);
         }
         //noinspection unchecked
         ((Map)map).put(name, null);
@@ -285,12 +255,12 @@ final class J {
           ((Map)map).put(name, reader.nextBoolean());
         }
         catch (final IOException e) {
-          logger.log(e);
+          Logger.log(e);
           //noinspection unchecked
           ((Map)map).put(name, null);
         }
         catch (final JsonDataException e) {
-          logger.log(e);
+          Logger.log(e);
           //noinspection unchecked
           ((Map)map).put(name, null);
         }
@@ -302,12 +272,12 @@ final class J {
           ((Map)map).put(name, nextNumber(reader));
         }
         catch (final IOException e) {
-          logger.log(e);
+          Logger.log(e);
           //noinspection unchecked
           ((Map)map).put(name, null);
         }
         catch (final JsonDataException e) {
-          logger.log(e);
+          Logger.log(e);
           //noinspection unchecked
           ((Map)map).put(name, null);
         }
@@ -319,12 +289,12 @@ final class J {
           ((Map)map).put(name, reader.nextString());
         }
         catch (final IOException e) {
-          logger.log(e);
+          Logger.log(e);
           //noinspection unchecked
           ((Map)map).put(name, null);
         }
         catch (final JsonDataException e) {
-          logger.log(e);
+          Logger.log(e);
           //noinspection unchecked
           ((Map)map).put(name, null);
         }
@@ -342,11 +312,11 @@ final class J {
             reader.endArray();
           }
           catch (final IOException e) {
-            logger.log(e);
+            Logger.log(e);
             break;
           }
           catch (final JsonDataException e) {
-            logger.log(e);
+            Logger.log(e);
             break;
           }
           return list;
@@ -356,13 +326,13 @@ final class J {
             reader.beginObject();
           }
           catch (final IOException e) {
-            logger.log(e);
+            Logger.log(e);
             //noinspection unchecked
             ((List)list).add(null);
             break;
           }
           catch (final JsonDataException e) {
-            logger.log(e);
+            Logger.log(e);
             //noinspection unchecked
             ((List)list).add(null);
             break;
@@ -376,13 +346,13 @@ final class J {
             reader.beginArray();
           }
           catch (final IOException e) {
-            logger.log(e);
+            Logger.log(e);
             //noinspection unchecked
             ((List)list).add(null);
             break;
           }
           catch (final JsonDataException e) {
-            logger.log(e);
+            Logger.log(e);
             //noinspection unchecked
             ((List)list).add(null);
             break;
@@ -396,10 +366,10 @@ final class J {
             reader.nextNull();
           }
           catch (final IOException e) {
-            logger.log(e);
+            Logger.log(e);
           }
           catch (final JsonDataException e) {
-            logger.log(e);
+            Logger.log(e);
           }
           //noinspection unchecked
           ((List)list).add(null);
@@ -411,12 +381,12 @@ final class J {
             ((List)list).add(reader.nextBoolean());
           }
           catch (final IOException e) {
-            logger.log(e);
+            Logger.log(e);
             //noinspection unchecked
             ((List)list).add(null);
           }
           catch (final JsonDataException e) {
-            logger.log(e);
+            Logger.log(e);
             //noinspection unchecked
             ((List)list).add(null);
           }
@@ -428,12 +398,12 @@ final class J {
             ((List)list).add(nextNumber(reader));
           }
           catch (final IOException e) {
-            logger.log(e);
+            Logger.log(e);
             //noinspection unchecked
             ((List)list).add(null);
           }
           catch (final JsonDataException e) {
-            logger.log(e);
+            Logger.log(e);
             //noinspection unchecked
             ((List)list).add(null);
           }
@@ -445,12 +415,12 @@ final class J {
             ((List)list).add(reader.nextString());
           }
           catch (final IOException e) {
-            logger.log(e);
+            Logger.log(e);
             //noinspection unchecked
             ((List)list).add(null);
           }
           catch (final JsonDataException e) {
-            logger.log(e);
+            Logger.log(e);
             //noinspection unchecked
             ((List)list).add(null);
           }
@@ -461,11 +431,11 @@ final class J {
             reader.skipValue();
           }
           catch (final IOException e) {
-            logger.log(e);
+            Logger.log(e);
             break;
           }
           catch (final JsonDataException e) {
-            logger.log(e);
+            Logger.log(e);
             break;
           }
         }

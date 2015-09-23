@@ -1,9 +1,20 @@
+buildscript {
+  repositories {
+    jcenter()
+  }
+  dependencies {
+    classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.3.1'
+  }
+}
+
 group 'info.jdavid.ok.json'
 version '1.0'
 
 apply plugin: 'java'
 apply plugin: 'jacoco'
 apply plugin: 'idea'
+apply plugin: 'maven-publish'
+apply plugin: 'com.jfrog.bintray'
 
 // Keep at 1.6 for Android
 sourceCompatibility = 1.6
@@ -12,6 +23,30 @@ targetCompatibility = 1.6
 repositories {
   jcenter()
 }
+
+configurations {
+  provided
+}
+
+dependencies {
+  provided files("$projectDir/libs/android.util.log.mock.jar")
+
+  compile 'com.squareup.moshi:moshi:0.9.0'
+  testCompile group: 'junit', name: 'junit', version: '4.12'
+}
+
+sourceSets {
+  main {
+    compileClasspath += configurations.provided
+  }
+}
+
+idea {
+  module {
+    scopes.PROVIDED.plus += [configurations.provided]
+  }
+}
+
 
 jacoco {
   reportsDir = file("$buildDir/jacoco/reports")
@@ -33,24 +68,65 @@ test {
   }
 }
 
-configurations {
-  provided
+javadoc {
+  classpath += configurations.provided
 }
 
-dependencies {
-  provided files("$projectDir/libs/android.util.log.mock.jar")
-  compile 'com.squareup.moshi:moshi:0.9.0'
-  testCompile group: 'junit', name: 'junit', version: '4.12'
+task javadocJar(type: Jar, dependsOn: javadoc) {
+  classifier = 'javadoc'
+  from javadoc.destinationDir
 }
 
-sourceSets {
-  main {
-    compileClasspath += configurations.provided
+task sourcesJar(type: Jar, dependsOn: classes) {
+  classifier = 'sources'
+  from sourceSets.main.allSource
+}
+
+artifacts {
+  archives sourcesJar, javadocJar
+}
+
+publishing {
+  publications {
+    mavenJava(MavenPublication) {
+      from components.java
+      artifact sourcesJar
+      artifact javadocJar
+    }
+  }
+  repositories {
+    maven {
+      url "$buildDir/repo"
+    }
   }
 }
 
-idea {
-  module {
-    scopes.PROVIDED.plus += [configurations.provided]
+
+bintray {
+  user = 'programingjd'
+  key = getBintrayApiKey()
+  dryRun = false
+  publish = true
+  publications = ['mavenJava']
+  pkg {
+    repo = 'maven'
+    name = 'info.jdavid.ok.json'
+    websiteUrl = 'https://github.com/programingjd/okjson'
+    issueTrackerUrl = 'https://github.com/programingjd/okjson/issues'
+    vcsUrl = 'https://github.com/programingjd/okjson.git'
+    licenses = ['Apache-2.0']
+    labels = ['json','okio','moshi','java']
+    publicDownloadNumbers = true
+    version {
+      name = project.version
+      mavenCentralSync {
+        sync = false
+      }
+    }
   }
+}
+
+def getBintrayApiKey() {
+  def f = new File("$projectDir/local.properties")
+  f.text.splitEachLine('=', { if (it && it[0] == 'bintrayApiKey') return it[1] })
 }
