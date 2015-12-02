@@ -34,7 +34,7 @@ public final class Parser {
   public static Object parse(final BufferedSource source) {
     final JsonReader reader;
     try {
-      reader = new JsonReader(source);
+      reader = JsonReader.of(source);
     }
     catch (final NullPointerException e) {
       return null;

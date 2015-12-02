@@ -46,7 +46,7 @@ public class Builder {
     if (map == null) return;
     final JsonWriter writer;
     try {
-      writer = new JsonWriter(sink);
+      writer = JsonWriter.of(sink);
     }
     catch (final NullPointerException e) {
       return;
@@ -97,7 +97,7 @@ public class Builder {
     if (list == null) return;
     final JsonWriter writer;
     try {
-      writer = new JsonWriter(sink);
+      writer = JsonWriter.of(sink);
     }
     catch (final NullPointerException e) {
       return;
