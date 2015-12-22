@@ -131,6 +131,36 @@ public class TestBuilder {
   }
 
   @Test
+  public void testBuildNumbers3() {
+    final long t1 = System.currentTimeMillis();
+    try { Thread.sleep(Math.round(Math.random() * 100)); } catch (final InterruptedException ignore) {}
+    final long t2 = System.currentTimeMillis();
+    final List<?> list = list(t1, t2);
+    assertTrue(Builder.isValidArray(list));
+    final Object parsed = Parser.parse(Builder.build(list));
+    assertTrue(parsed instanceof List);
+    final List list2 = (List)parsed;
+    assertEquals(2, list2.size());
+    assertEquals(t1, list2.get(0));
+    assertEquals(t2, list2.get(1));
+  }
+
+  @Test
+  public void testBuildNumbers4() {
+    final long t1 = System.currentTimeMillis();
+    try { Thread.sleep(Math.round(Math.random() * 100)); } catch (final InterruptedException ignore) {}
+    final long t2 = System.currentTimeMillis();
+    final Map<String, ?> map = map(kv("a", t1), kv("b", t2));
+    assertTrue(Builder.isValidObject(map));
+    final Object parsed = Parser.parse(Builder.build(map));
+    assertTrue(parsed instanceof Map);
+    final Map map2 = (Map)parsed;
+    assertEquals(2, map2.size());
+    assertEquals(t1, map2.get("a"));
+    assertEquals(t2, map2.get("b"));
+  }
+
+  @Test
   public void testBuildStrings1() {
     final Map<String, ?> map = map(kv("key_a","value \"a\""), kv("a\tb", "\n"));
     assertTrue(Builder.isValidObject(map));
