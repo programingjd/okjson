@@ -18,6 +18,7 @@ public final class Parser {
    * Converts the given String to a
    * {@link okio.BufferedSource} and passes it to {@link #parse(BufferedSource)}.
    * @param s the json string to parse.
+   * @param <T> List&lt;?&gt; or Map&lt;String, ?&gt;.
    * @return either a map representing a json object, or a list representing a json array,
    * or even null if the string is not valid json.
    */
@@ -29,6 +30,7 @@ public final class Parser {
    * Converts a json string to its object representation. The representation is using
    * {@link java.util.Map}s for json objects and {@link java.util.List}s for json arrays.
    * @param source the json string as an okio source.
+   * @param <T> List&lt;?&gt; or Map&lt;String, ?&gt;.
    * @return the object representation of the json string, or null if the source is not valid json.
    */
   public static <T> T parse(final BufferedSource source) {
