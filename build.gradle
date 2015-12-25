@@ -4,11 +4,12 @@ buildscript {
   }
   dependencies {
     classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.5'
+    classpath 'org.jsoup:jsoup:1.8.3'
   }
 }
 
 group 'info.jdavid.ok.json'
-version '2.6.2'
+version '2.6.3'
 
 apply plugin: 'java'
 apply plugin: 'jacoco'
@@ -67,6 +68,34 @@ test {
     destinationFile = file("$buildDir/jacoco/jacocoTest.exec")
     classDumpFile = file("$buildDir/jacoco/classpathdumps")
   }
+  doLast {
+    File html = reports.html.entryPoint
+    def doc = org.jsoup.Jsoup.parse(html, 'UTF-8')
+    int total = doc.select('#tests > .counter').text() as int
+    int failed = doc.select('#failures > .counter').text() as int
+
+    def readme = file('README.md')
+    def badge = { String label, String text, String color ->
+      "https://img.shields.io/badge/_${label}_-_${text}-${color}.png?style=flat"
+    }
+    String label = 'Tests'
+    String text = "${total-failed}/${total}"
+    String color = failed == 0 ? 'green' : (failed < 3 ? 'yellow' : 'red')
+    String v = project.version
+    def download =
+      "https://bintray.com/artifact/download/programingjd/maven/info/jdavid/ok/json/okjson/$v/okjson-${v}.jar"
+    readme.readLines().withIndex().collect { line, i ->
+      switch (i) {
+        case 0:
+          return "![jcenter](${badge('jcenter',v,'6688ff')}) &#x2003; ![jcenter](${badge(label,text,color)})"
+        case 11: return "[Download](${download}) the latest jar."
+        case 21: return "  <version>${v}</version>"
+        case 34: return "  compile 'info.jdavid.ok.json:okjson:${v}'"
+        default: return line
+      }
+    }.join('\n').with { readme.text = it }
+  }
+  finalizedBy tasks.jacocoTestReport
 }
 
 javadoc {
@@ -126,6 +155,8 @@ bintray {
     }
   }
 }
+
+tasks.bintrayUpload.dependsOn tasks.check
 
 def getBintrayApiKey() {
   def f = new File("$projectDir/local.properties")

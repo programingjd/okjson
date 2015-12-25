@@ -1,4 +1,4 @@
-![jcenter](https://img.shields.io/badge/_jcenter_-_2.6.2_-6688ff.png?style=flat) &nbsp; ![jcenter](https://img.shields.io/badge/_Tests_-_10%2f10_-00bb22.png?style=flat)
+![jcenter](https://img.shields.io/badge/_jcenter_-_2.6.3-6688ff.png?style=flat) &#x2003; ![jcenter](https://img.shields.io/badge/_Tests_-_40/40-green.png?style=flat)
 # okjson
 A JSON library for the jvm and android, built on top of [okio](https://github.com/square/okio) and [moshi](https://github.com/square/moshi/).
  
@@ -9,7 +9,7 @@ It transforms JSON objects to `Maps` and JSON arrays to `Lists`.
 The maven artifacts are on [Bintray](https://bintray.com/programingjd/maven/info.jdavid.ok.json/view)
 and [jcenter](https://bintray.com/search?query=info.jdavid.ok.json).
 
-[Download](https://bintray.com/artifact/download/programingjd/maven/info/jdavid/ok/json/okjson/2.6.2/okjson-2.6.2.jar) the latest jar.
+[Download](https://bintray.com/artifact/download/programingjd/maven/info/jdavid/ok/json/okjson/2.6.3/okjson-2.6.3.jar) the latest jar.
 
 __Maven__
 
@@ -19,7 +19,7 @@ Include [those settings](https://bintray.com/repo/downloadMavenRepoSettingsFile/
 <dependency>
   <groupId>info.jdavid.ok.json</groupId>
   <artifactId>okjson</artifactId>
-  <version>2.6.2</version>
+  <version>2.6.3</version>
 </dependency>
 ```
 __Gradle__
@@ -32,7 +32,7 @@ repositories {
 ```
 ```
 dependencies {
-  compile 'info.jdavid.ok.json:okjson:2.6.2'
+  compile 'info.jdavid.ok.json:okjson:2.6.3'
 }
 ```
 

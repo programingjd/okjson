@@ -21,7 +21,7 @@ public final class Parser {
    * @return either a map representing a json object, or a list representing a json array,
    * or even null if the string is not valid json.
    */
-  public static Object parse(final String s) {
+  public static <T> T parse(final String s) {
     return parse(new Buffer().writeUtf8(s));
   }
 
@@ -31,7 +31,7 @@ public final class Parser {
    * @param source the json string as an okio source.
    * @return the object representation of the json string, or null if the source is not valid json.
    */
-  public static Object parse(final BufferedSource source) {
+  public static <T> T parse(final BufferedSource source) {
     final JsonReader reader;
     try {
       reader = JsonReader.of(source);
@@ -55,7 +55,7 @@ public final class Parser {
           break;
         }
         //noinspection unchecked
-        return walk(reader, new HashMap());
+        return (T)walk(reader, new HashMap());
       }
       case BEGIN_ARRAY: {
         try {
@@ -70,7 +70,7 @@ public final class Parser {
           break;
         }
         //noinspection unchecked
-        return walkArray(reader, new ArrayList());
+        return (T)walkArray(reader, new ArrayList());
       }
     }
     return null;
