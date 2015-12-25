@@ -24,7 +24,7 @@ Include [those settings](https://bintray.com/repo/downloadMavenRepoSettingsFile/
 ```
 __Gradle__
 
-Include jcenter to the list of maven repositories.
+Add jcenter to the list of maven repositories.
 ```
 repositories {
   jcenter()
