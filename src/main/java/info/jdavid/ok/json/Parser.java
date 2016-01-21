@@ -23,7 +23,13 @@ public final class Parser {
    * or even null if the string is not valid json.
    */
   public static <T> T parse(final String s) {
-    return parse(new Buffer().writeUtf8(s));
+    final Buffer buffer = new Buffer();
+    try {
+      return parse(buffer.writeUtf8(s));
+    }
+    finally {
+      buffer.close();
+    }
   }
 
   /**
@@ -41,41 +47,49 @@ public final class Parser {
     catch (final NullPointerException e) {
       return null;
     }
-    final JsonReader.Token token = nextToken(reader);
-    if (token == null) return null;
-    switch (token) {
-      case BEGIN_OBJECT: {
-        try {
-          reader.beginObject();
+    try {
+      final JsonReader.Token token = nextToken(reader);
+      if (token == null) return null;
+      switch (token) {
+        case BEGIN_OBJECT: {
+          try {
+            reader.beginObject();
+          }
+          catch (final IOException e) {
+            Logger.log(e);
+            break;
+          }
+          catch (final JsonDataException e) {
+            Logger.log(e);
+            break;
+          }
+          //noinspection unchecked
+          return (T)walk(reader, new HashMap());
         }
-        catch (final IOException e) {
-          Logger.log(e);
-          break;
+        case BEGIN_ARRAY: {
+          try {
+            reader.beginArray();
+          }
+          catch (final IOException e) {
+            Logger.log(e);
+            break;
+          }
+          catch (final JsonDataException e) {
+            Logger.log(e);
+            break;
+          }
+          //noinspection unchecked
+          return (T)walkArray(reader, new ArrayList());
         }
-        catch (final JsonDataException e) {
-          Logger.log(e);
-          break;
-        }
-        //noinspection unchecked
-        return (T)walk(reader, new HashMap());
       }
-      case BEGIN_ARRAY: {
-        try {
-          reader.beginArray();
-        }
-        catch (final IOException e) {
-          Logger.log(e);
-          break;
-        }
-        catch (final JsonDataException e) {
-          Logger.log(e);
-          break;
-        }
-        //noinspection unchecked
-        return (T)walkArray(reader, new ArrayList());
-      }
+      return null;
     }
-    return null;
+    finally {
+      try {
+        reader.close();
+      }
+      catch (final IOException ignore) {}
+    }
   }
 
   private Parser() {}

@@ -33,15 +33,14 @@ public class Builder {
     final Buffer buffer = new Buffer();
     build(buffer, map);
     if (buffer.size() == 0) return null;
-    return buffer.readUtf8();
+    try {
+      return buffer.readUtf8();
+    }
+    finally {
+      buffer.close();
+    }
   }
 
-  /**
-   * Writes the string representation of a given json object (represented by a map) to a
-   * {@link okio.BufferedSource}.
-   * @param sink the target buffer.
-   * @param map the map representation of the json object.
-   */
   public static void build(final BufferedSink sink, final Map<String, ?> map) {
     if (map == null) return;
     final JsonWriter writer;
@@ -58,6 +57,12 @@ public class Builder {
     }
     catch (final IOException e) {
       Logger.log(e);
+    }
+    finally {
+      try {
+        writer.close();
+      }
+      catch (final IOException ignore) {}
     }
   }
 
@@ -84,7 +89,12 @@ public class Builder {
     final Buffer buffer = new Buffer();
     build(buffer, list);
     if (buffer.size() == 0) return null;
-    return buffer.readUtf8();
+    try {
+      return buffer.readUtf8();
+    }
+    finally {
+      buffer.close();
+    }
   }
 
   /**
@@ -109,6 +119,12 @@ public class Builder {
     }
     catch (final IOException e) {
       Logger.log(e);
+    }
+    finally {
+      try {
+        writer.close();
+      }
+      catch (final IOException ignore) {}
     }
   }
 
