@@ -145,7 +145,7 @@ bintray {
     issueTrackerUrl = 'https://github.com/programingjd/okjson/issues'
     vcsUrl = 'https://github.com/programingjd/okjson.git'
     githubRepo = 'programingjd/okjson'
-    gihubReleaseNotesFile = 'README.md'
+    githubReleaseNotesFile = 'README.md'
     licenses = ['Apache-2.0']
     labels = ['json','okio','moshi','java']
     publicDownloadNumbers = true
