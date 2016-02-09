@@ -3,7 +3,7 @@ buildscript {
     jcenter()
   }
   dependencies {
-    classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.5'
+    classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.6'
     classpath 'org.jsoup:jsoup:1.8.3'
   }
 }
@@ -144,6 +144,8 @@ bintray {
     websiteUrl = 'https://github.com/programingjd/okjson'
     issueTrackerUrl = 'https://github.com/programingjd/okjson/issues'
     vcsUrl = 'https://github.com/programingjd/okjson.git'
+    githubRepo = 'programingjd/okjson'
+    gihubReleaseNotesFile = 'README.md'
     licenses = ['Apache-2.0']
     labels = ['json','okio','moshi','java']
     publicDownloadNumbers = true
