@@ -9,7 +9,7 @@ buildscript {
 }
 
 group 'info.jdavid.ok.json'
-version '3.1.1'
+version '3.2.0'
 
 apply plugin: 'java'
 apply plugin: 'jacoco'
@@ -32,7 +32,7 @@ configurations {
 dependencies {
   provided files("$projectDir/libs/android.util.log.mock.jar")
 
-  compile 'com.squareup.okio:okio:1.6.0'
+  compile 'com.squareup.okio:okio:1.7.0'
   compile 'com.squareup.moshi:moshi:1.1.0'
   testCompile 'junit:junit:4.12'
 }
@@ -145,7 +145,7 @@ bintray {
     issueTrackerUrl = 'https://github.com/programingjd/okjson/issues'
     vcsUrl = 'https://github.com/programingjd/okjson.git'
     githubRepo = 'programingjd/okjson'
-    gihubReleaseNotesFile = 'README.md'
+    githubReleaseNotesFile = 'README.md'
     licenses = ['Apache-2.0']
     labels = ['json','okio','moshi','java']
     publicDownloadNumbers = true
