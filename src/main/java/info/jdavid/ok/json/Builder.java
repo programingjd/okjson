@@ -8,6 +8,7 @@ import com.squareup.moshi.JsonWriter;
 import okio.Buffer;
 import okio.BufferedSink;
 
+@SuppressWarnings("WeakerAccess")
 public class Builder {
 
   /**
@@ -15,7 +16,7 @@ public class Builder {
    * @param map the map to inspect.
    * @return true if the map is a valid representation of a json object, false if it isn't.
    */
-  public static boolean isValidObject(final Map<String, ?> map) {
+  public static boolean isValidObject(final Map<? extends CharSequence, ?> map) {
     try {
       return map != null && walk(map);
     }
@@ -29,7 +30,7 @@ public class Builder {
    * @param map the json object.
    * @return either a string or null if the map doesn't represent a valid json object.
    */
-  public static String build(final Map<String, ?> map) {
+  public static String build(final Map<? extends CharSequence, ?> map) {
     final Buffer buffer = new Buffer();
     build(buffer, map);
     if (buffer.size() == 0) return null;
@@ -41,7 +42,7 @@ public class Builder {
     }
   }
 
-  public static void build(final BufferedSink sink, final Map<String, ?> map) {
+  public static void build(final BufferedSink sink, final Map<? extends CharSequence, ?> map) {
     if (map == null) return;
     final JsonWriter writer;
     try {
@@ -130,35 +131,39 @@ public class Builder {
 
   private Builder() {}
 
-  private static void walk(final JsonWriter writer, final Map<String, ?> map) {
-    for (final Map.Entry<String, ?> entry: map.entrySet()) {
+  private static void walk(final JsonWriter writer, final Map<? extends CharSequence, ?> map) {
+    for (final Map.Entry<? extends CharSequence, ?> entry: map.entrySet()) {
       try {
         final Object value = entry.getValue();
         if (value == null) {
-          writer.name(entry.getKey());
+          writer.name(entry.getKey().toString());
           writer.nullValue();
         }
-        if (value instanceof String) {
-          writer.name(entry.getKey());
+        else if (value instanceof String) {
+          writer.name(entry.getKey().toString());
           writer.value((String)value);
         }
         else if (value instanceof Number) {
-          writer.name(entry.getKey());
+          writer.name(entry.getKey().toString());
           writer.value(((Number)value));
         }
         else if (value instanceof Boolean) {
-          writer.name(entry.getKey());
+          writer.name(entry.getKey().toString());
           writer.value((Boolean)value);
         }
+        else if (value instanceof CharSequence) {
+          writer.name(entry.getKey().toString());
+          writer.value(value.toString());
+        }
         else if (value instanceof Map) {
-          writer.name(entry.getKey());
+          writer.name(entry.getKey().toString());
           writer.beginObject();
           //noinspection unchecked
           walk(writer, (Map)value);
           writer.endObject();
         }
         else if (value instanceof List) {
-          writer.name(entry.getKey());
+          writer.name(entry.getKey().toString());
           writer.beginArray();
           //noinspection unchecked
           walk(writer, (List)value);
@@ -177,7 +182,7 @@ public class Builder {
         if (value == null) {
           writer.nullValue();
         }
-        if (value instanceof String) {
+        else if (value instanceof String) {
           writer.value((String)value);
         }
         else if (value instanceof Number) {
@@ -185,6 +190,9 @@ public class Builder {
         }
         else if (value instanceof Boolean) {
           writer.value((Boolean)value);
+        }
+        else if (value instanceof CharSequence) {
+          writer.value(value.toString());
         }
         else if (value instanceof Map) {
           writer.beginObject();
@@ -205,15 +213,16 @@ public class Builder {
     }
   }
 
-  private static boolean walk(final Map<String, ?> map) {
-    for (final Map.Entry<String, ?> entry: map.entrySet()) {
-      String key = entry.getKey();
-      if (key == null) return false;
+  private static boolean walk(final Map<? extends CharSequence, ?> map) {
+    for (final Map.Entry<? extends CharSequence, ?> entry: map.entrySet()) {
+      //noinspection ConstantConditions
+      if (!(entry.getKey() instanceof CharSequence)) return false;
       final Object value = entry.getValue();
       if (value == null ||
           value instanceof String ||
           value instanceof Number ||
-          value instanceof Boolean) {
+          value instanceof Boolean ||
+          value instanceof CharSequence) {
         continue;
       }
       //noinspection unchecked
@@ -234,7 +243,8 @@ public class Builder {
       if (value == null ||
           value instanceof String ||
           value instanceof Number ||
-          value instanceof Boolean) {
+          value instanceof Boolean ||
+          value instanceof CharSequence) {
         continue;
       }
       //noinspection unchecked

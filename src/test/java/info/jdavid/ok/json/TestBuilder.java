@@ -36,9 +36,9 @@ public class TestBuilder {
   }
 
   private static final class KeyValue {
-    public final String key;
-    public final Object value;
-    public KeyValue(final String key, final Object value) {
+    final String key;
+    final Object value;
+    KeyValue(final String key, final Object value) {
       this.key = key;
       this.value = value;
     }
@@ -172,6 +172,25 @@ public class TestBuilder {
     final List<?> list = list("a", "abc", "\n", "\"quotes\"");
     assertTrue(Builder.isValidArray(list));
     assertEquals("[\"a\",\"abc\",\"\\n\",\"\\\"quotes\\\"\"]", Builder.build(list));
+  }
+
+  @Test
+  public void testCharSequenceValues() {
+    final Map<String, ?> map = map(
+      kv("key_a", new StringBuilder("value \"a\"")),
+      kv("a\tb", new StringBuilder("\n"))
+    );
+    assertTrue(Builder.isValidObject(map));
+    assertEquals("{\"key_a\":\"value \\\"a\\\"\",\"a\\tb\":\"\\n\"}", Builder.build(map));
+  }
+
+  @Test
+  public void testCharSequenceKeys() {
+    final Map<CharSequence, Object> map = new LinkedHashMap<CharSequence, Object>();
+    map.put("key_a", "value \"a\"");
+    map.put(new StringBuilder("a\tb"), new StringBuilder("\n"));
+    assertTrue(Builder.isValidObject(map));
+    assertEquals("{\"key_a\":\"value \\\"a\\\"\",\"a\\tb\":\"\\n\"}", Builder.build(map));
   }
 
   @Test

@@ -12,6 +12,7 @@ import com.squareup.moshi.JsonReader;
 import okio.Buffer;
 import okio.BufferedSource;
 
+@SuppressWarnings("WeakerAccess")
 public final class Parser {
 
   /**
