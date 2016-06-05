@@ -4,12 +4,12 @@ buildscript {
   }
   dependencies {
     classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.6'
-    classpath 'org.jsoup:jsoup:1.8.3'
+    classpath 'org.jsoup:jsoup:1.9.2'
   }
 }
 
 group 'info.jdavid.ok.json'
-version '3.3.0'
+version '3.3.1'
 
 apply plugin: 'java'
 apply plugin: 'jacoco'
@@ -33,7 +33,7 @@ dependencies {
   provided files("$projectDir/libs/android.util.log.mock.jar")
 
   compile 'com.squareup.okio:okio:1.8.0'
-  compile 'com.squareup.moshi:moshi:1.1.0'
+  compile 'com.squareup.moshi:moshi:1.2.0'
   testCompile 'junit:junit:4.12'
 }
 
