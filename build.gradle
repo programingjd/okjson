@@ -9,7 +9,7 @@ buildscript {
 }
 
 group 'info.jdavid.ok.json'
-version '3.3.1'
+version '3.3.3'
 
 apply plugin: 'java'
 apply plugin: 'jacoco'
@@ -32,7 +32,7 @@ configurations {
 dependencies {
   provided files("$projectDir/libs/android.util.log.mock.jar")
 
-  compile 'com.squareup.okio:okio:1.8.0'
+  compile 'com.squareup.okio:okio:1.9.0'
   compile 'com.squareup.moshi:moshi:1.2.0'
   testCompile 'junit:junit:4.12'
 }
