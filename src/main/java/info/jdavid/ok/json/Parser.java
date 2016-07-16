@@ -320,6 +320,7 @@ public final class Parser {
     }
   }
 
+  @SuppressWarnings("ConstantConditions")
   private static List<?> walkArray(final JsonReader reader, final List<?> list) {
     JsonReader.Token token;
     while ((token = nextToken(reader)) != null) {
