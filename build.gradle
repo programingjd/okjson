@@ -9,11 +9,10 @@ buildscript {
 }
 
 group 'info.jdavid.ok.json'
-version '3.3.1'
+version '3.3.3'
 
 apply plugin: 'java'
 apply plugin: 'jacoco'
-apply plugin: 'idea'
 apply plugin: 'maven-publish'
 apply plugin: 'com.jfrog.bintray'
 
@@ -25,28 +24,12 @@ repositories {
   jcenter()
 }
 
-configurations {
-  provided
-}
-
 dependencies {
-  provided files("$projectDir/libs/android.util.log.mock.jar")
+  compileOnly files("$projectDir/libs/android.util.log.mock.jar")
 
-  compile 'com.squareup.okio:okio:1.8.0'
+  compile 'com.squareup.okio:okio:1.9.0'
   compile 'com.squareup.moshi:moshi:1.2.0'
   testCompile 'junit:junit:4.12'
-}
-
-sourceSets {
-  main {
-    compileClasspath += configurations.provided
-  }
-}
-
-idea {
-  module {
-    scopes.PROVIDED.plus += [configurations.provided]
-  }
 }
 
 
@@ -96,10 +79,6 @@ test {
     }.join('\n').with { readme.text = it }
   }
   finalizedBy tasks.jacocoTestReport
-}
-
-javadoc {
-  classpath += configurations.provided
 }
 
 task javadocJar(type: Jar, dependsOn: javadoc) {

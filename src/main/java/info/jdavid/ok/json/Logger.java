@@ -7,7 +7,7 @@ enum Logger {
 
   private final LogHandler logger;
 
-  private Logger() {
+  Logger() {
     boolean android;
     try {
       Class.forName("android.util.LogPrinter");
@@ -31,7 +31,7 @@ enum Logger {
   }
 
   private interface LogHandler {
-    public void log(final Exception e);
+    void log(final Exception e);
   }
 
   public void exception(final Exception e) {
