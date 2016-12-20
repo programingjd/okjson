@@ -1,7 +1,7 @@
 package info.jdavid.ok.json;
 
 import java.io.IOException;
-import java.util.List;
+import java.util.Collection;
 import java.util.Map;
 
 import com.squareup.moshi.JsonWriter;
@@ -69,12 +69,12 @@ public class Builder {
 
   /**
    * Validates the given list as a valid representation of a json array.
-   * @param list the list to inspect.
+   * @param collection the list to inspect.
    * @return true if the list is a valid representation of a json array, false if it isn't.
    */
-  public static boolean isValidArray(final List<?> list) {
+  public static boolean isValidArray(final Collection<?> collection) {
     try {
-      return list != null && walk(list);
+      return collection != null && walk(collection);
     }
     catch (final ClassCastException e) {
       return false;
@@ -83,12 +83,12 @@ public class Builder {
 
   /**
    * Converts the given list representation of a json array to its string representation.
-   * @param list the json array.
+   * @param collection the json array.
    * @return either a string or null if the list doesn't represent a valid json array.
    */
-  public static String build(final List<?> list) {
+  public static String build(final Collection<?> collection) {
     final Buffer buffer = new Buffer();
-    build(buffer, list);
+    build(buffer, collection);
     if (buffer.size() == 0) return null;
     try {
       return buffer.readUtf8();
@@ -102,10 +102,10 @@ public class Builder {
    * Writes the string representation of a given json array (represented by a list) to a
    * {@link okio.BufferedSource}.
    * @param sink the target buffer.
-   * @param list the list representation of the json array.
+   * @param collection the list representation of the json array.
    */
-  public static void build(final BufferedSink sink, final List<?> list) {
-    if (list == null) return;
+  public static void build(final BufferedSink sink, final Collection<?> collection) {
+    if (collection == null) return;
     final JsonWriter writer;
     try {
       writer = JsonWriter.of(sink);
@@ -115,7 +115,7 @@ public class Builder {
     }
     try {
       writer.beginArray();
-      walk(writer, list);
+      walk(writer, collection);
       writer.endArray();
     }
     catch (final IOException e) {
@@ -162,11 +162,11 @@ public class Builder {
           walk(writer, (Map)value);
           writer.endObject();
         }
-        else if (value instanceof List) {
+        else if (value instanceof Collection) {
           writer.name(entry.getKey().toString());
           writer.beginArray();
           //noinspection unchecked
-          walk(writer, (List)value);
+          walk(writer, (Collection)value);
           writer.endArray();
         }
       }
@@ -176,8 +176,8 @@ public class Builder {
     }
   }
 
-  private static void walk(final JsonWriter writer, final List<?> list) {
-    for (final Object value: list) {
+  private static void walk(final JsonWriter writer, final Collection<?> collection) {
+    for (final Object value: collection) {
       try {
         if (value == null) {
           writer.nullValue();
@@ -200,10 +200,10 @@ public class Builder {
           walk(writer, (Map)value);
           writer.endObject();
         }
-        else if (value instanceof List) {
+        else if (value instanceof Collection) {
           writer.beginArray();
           //noinspection unchecked
-          walk(writer, (List)value);
+          walk(writer, (Collection)value);
           writer.endArray();
         }
       }
@@ -230,7 +230,7 @@ public class Builder {
         continue;
       }
       //noinspection unchecked
-      if (value instanceof List && walk((List)value)) {
+      if (value instanceof Collection && walk((Collection)value)) {
         continue;
       }
       return false;
@@ -238,8 +238,8 @@ public class Builder {
     return true;
   }
 
-  private static boolean walk(final List<?> list) {
-    for (final Object value: list) {
+  private static boolean walk(final Collection<?> collection) {
+    for (final Object value: collection) {
       if (value == null ||
           value instanceof String ||
           value instanceof Number ||
@@ -252,7 +252,7 @@ public class Builder {
         continue;
       }
       //noinspection unchecked
-      if (value instanceof List && walk((List)value)) {
+      if (value instanceof Collection && walk((Collection)value)) {
         continue;
       }
       return false;
