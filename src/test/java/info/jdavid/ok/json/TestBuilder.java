@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -66,7 +67,7 @@ public class TestBuilder {
   @Test
   public void testBuildNullList() {
     //noinspection unchecked
-    final String built = Builder.build((List)null);
+    final String built = Builder.build((Iterable)null);
     assertNull(built);
   }
 
@@ -83,6 +84,14 @@ public class TestBuilder {
     final List<?> list = Collections.emptyList();
     assertTrue(Builder.isValidArray(list));
     final String built = Builder.build(list);
+    assertEquals("[]", built);
+  }
+
+  @Test
+  public void testBuildEmptySet() {
+    final Set<?> set = Collections.emptySet();
+    assertTrue(Builder.isValidArray(set));
+    final String built = Builder.build(set);
     assertEquals("[]", built);
   }
 

@@ -1,7 +1,6 @@
 package info.jdavid.ok.json;
 
 import java.io.IOException;
-import java.util.List;
 import java.util.Map;
 
 import com.squareup.moshi.JsonWriter;
@@ -68,11 +67,11 @@ public class Builder {
   }
 
   /**
-   * Validates the given list as a valid representation of a json array.
-   * @param list the list to inspect.
+   * Validates the given list (iterable) as a valid representation of a json array.
+   * @param list the list (iterable) to inspect.
    * @return true if the list is a valid representation of a json array, false if it isn't.
    */
-  public static boolean isValidArray(final List<?> list) {
+  public static boolean isValidArray(final Iterable<?> list) {
     try {
       return list != null && walk(list);
     }
@@ -82,11 +81,11 @@ public class Builder {
   }
 
   /**
-   * Converts the given list representation of a json array to its string representation.
+   * Converts the given list (iterable) representation of a json array to its string representation.
    * @param list the json array.
    * @return either a string or null if the list doesn't represent a valid json array.
    */
-  public static String build(final List<?> list) {
+  public static String build(final Iterable<?> list) {
     final Buffer buffer = new Buffer();
     build(buffer, list);
     if (buffer.size() == 0) return null;
@@ -102,9 +101,9 @@ public class Builder {
    * Writes the string representation of a given json array (represented by a list) to a
    * {@link okio.BufferedSource}.
    * @param sink the target buffer.
-   * @param list the list representation of the json array.
+   * @param list the list (iterable) representation of the json array.
    */
-  public static void build(final BufferedSink sink, final List<?> list) {
+  public static void build(final BufferedSink sink, final Iterable<?> list) {
     if (list == null) return;
     final JsonWriter writer;
     try {
@@ -162,11 +161,11 @@ public class Builder {
           walk(writer, (Map)value);
           writer.endObject();
         }
-        else if (value instanceof List) {
+        else if (value instanceof Iterable) {
           writer.name(entry.getKey().toString());
           writer.beginArray();
           //noinspection unchecked
-          walk(writer, (List)value);
+          walk(writer, (Iterable)value);
           writer.endArray();
         }
       }
@@ -176,7 +175,7 @@ public class Builder {
     }
   }
 
-  private static void walk(final JsonWriter writer, final List<?> list) {
+  private static void walk(final JsonWriter writer, final Iterable<?> list) {
     for (final Object value: list) {
       try {
         if (value == null) {
@@ -200,10 +199,10 @@ public class Builder {
           walk(writer, (Map)value);
           writer.endObject();
         }
-        else if (value instanceof List) {
+        else if (value instanceof Iterable) {
           writer.beginArray();
           //noinspection unchecked
-          walk(writer, (List)value);
+          walk(writer, (Iterable)value);
           writer.endArray();
         }
       }
@@ -230,7 +229,7 @@ public class Builder {
         continue;
       }
       //noinspection unchecked
-      if (value instanceof List && walk((List)value)) {
+      if (value instanceof Iterable && walk((Iterable)value)) {
         continue;
       }
       return false;
@@ -238,7 +237,7 @@ public class Builder {
     return true;
   }
 
-  private static boolean walk(final List<?> list) {
+  private static boolean walk(final Iterable<?> list) {
     for (final Object value: list) {
       if (value == null ||
           value instanceof String ||
@@ -252,7 +251,7 @@ public class Builder {
         continue;
       }
       //noinspection unchecked
-      if (value instanceof List && walk((List)value)) {
+      if (value instanceof Iterable && walk((Iterable)value)) {
         continue;
       }
       return false;
