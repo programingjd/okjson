@@ -3,11 +3,14 @@ package info.jdavid.ok.json;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
+import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Vector;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -60,14 +63,13 @@ public class TestBuilder {
   @Test
   public void testBuildNullMap() {
     //noinspection unchecked
-    final String built = Builder.build((Map)null);
+    final String built = Builder.build((Map<String, ?>)null);
     assertNull(built);
   }
 
   @Test
   public void testBuildNullList() {
-    //noinspection unchecked
-    final String built = Builder.build((Iterable)null);
+    final String built = Builder.build((Iterable<?>)null);
     assertNull(built);
   }
 
@@ -75,24 +77,46 @@ public class TestBuilder {
   public void testBuildEmptyMap() {
     final Map<String, ?> map = Collections.<String, Object>emptyMap();
     assertTrue(Builder.isValidObject(map));
-    final String built = Builder.build(map);
-    assertEquals("{}", built);
+    assertEquals("{}", Builder.build(map));
+    assertEquals("{}", Builder.build(map, true));
+    assertEquals("{}", Builder.build(map, "\t"));
   }
 
   @Test
   public void testBuildEmptyList() {
     final List<?> list = Collections.emptyList();
     assertTrue(Builder.isValidArray(list));
-    final String built = Builder.build(list);
-    assertEquals("[]", built);
+    assertEquals("[]", Builder.build(list));
+    assertEquals("[]", Builder.build(list, true));
+    assertEquals("[]", Builder.build(list, "\t"));
   }
 
   @Test
   public void testBuildEmptySet() {
     final Set<?> set = Collections.emptySet();
     assertTrue(Builder.isValidArray(set));
-    final String built = Builder.build(set);
-    assertEquals("[]", built);
+    assertEquals("[]", Builder.build(set));
+    assertEquals("[]", Builder.build(set, true));
+    assertEquals("[]", Builder.build(set, "\t"));
+  }
+
+  @Test
+  public void testBuildEmptyIterator() {
+    final List<?> list = Collections.emptyList();
+    assertTrue(Builder.isValidArray(list.iterator()));
+    assertEquals("[]", Builder.build(list.iterator()));
+    assertEquals("[]", Builder.build(list.iterator(), true));
+    assertEquals("[]", Builder.build(list.iterator(), "\t"));
+  }
+
+  @SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
+  @Test
+  public void testBuildEmptyEnumeration() {
+    final Vector<?> vector = new Vector<Object>();
+    assertTrue(Builder.isValidArray(vector.elements()));
+    assertEquals("[]", Builder.build(vector.elements()));
+    assertEquals("[]", Builder.build(vector.elements(), true));
+    assertEquals("[]", Builder.build(vector.elements(), "\t"));
   }
 
   @Test
@@ -119,10 +143,22 @@ public class TestBuilder {
 
   @Test
   public void testBuildUnknownValue2() {
-    assertFalse(Builder.isValidArray(null));
+    assertFalse(Builder.isValidArray((Iterable<?>)null));
+    assertFalse(Builder.isValidArray((Iterator<?>)null));
+    assertFalse(Builder.isValidArray((Enumeration<?>)null));
     final List<?> list = list(new Date());
     assertFalse(Builder.isValidArray(list));
     assertEquals("[]", Builder.build(list));
+    assertEquals("[]", Builder.build(list, true));
+    assertEquals("[]", Builder.build(list, "\t"));
+    assertFalse(Builder.isValidArray(list.iterator()));
+    assertEquals("[]", Builder.build(list.iterator()));
+    assertEquals("[]", Builder.build(list.iterator(), true));
+    assertEquals("[]", Builder.build(list.iterator(), "\t"));
+    assertFalse(Builder.isValidArray(Collections.enumeration(list)));
+    assertEquals("[]", Builder.build(Collections.enumeration(list)));
+    assertEquals("[]", Builder.build(Collections.enumeration(list), true));
+    assertEquals("[]", Builder.build(Collections.enumeration(list), "\t"));
   }
 
   @Test
@@ -130,6 +166,10 @@ public class TestBuilder {
     final Map<String, ?> map = map(kv("k1", 1), kv("k2", 2.3f), kv("k3", -2L), kv("k4", 1E-3));
     assertTrue(Builder.isValidObject(map));
     assertEquals("{\"k1\":1,\"k2\":2.3,\"k3\":-2,\"k4\":0.001}", Builder.build(map));
+    assertEquals("{\n  \"k1\": 1,\n  \"k2\": 2.3,\n  \"k3\": -2,\n  \"k4\": 0.001\n}",
+                 Builder.build(map, true));
+    assertEquals("{\n\t\"k1\": 1,\n\t\"k2\": 2.3,\n\t\"k3\": -2,\n\t\"k4\": 0.001\n}",
+                 Builder.build(map, "\t"));
   }
 
   @Test
@@ -137,6 +177,20 @@ public class TestBuilder {
     final List<?> list = list(.2, 3.1f, 0, 4L, 1E-2);
     assertTrue(Builder.isValidArray(list));
     assertEquals("[0.2,3.1,0,4,0.01]", Builder.build(list));
+    assertEquals("[\n  0.2,\n  3.1,\n  0,\n  4,\n  0.01\n]", Builder.build(list, true));
+    assertEquals("[\n\t0.2,\n\t3.1,\n\t0,\n\t4,\n\t0.01\n]", Builder.build(list, "\t"));
+    assertTrue(Builder.isValidArray(list.iterator()));
+    assertEquals("[0.2,3.1,0,4,0.01]", Builder.build(list.iterator()));
+    assertEquals("[\n  0.2,\n  3.1,\n  0,\n  4,\n  0.01\n]",
+                 Builder.build(list.iterator(), true));
+    assertEquals("[\n\t0.2,\n\t3.1,\n\t0,\n\t4,\n\t0.01\n]",
+                 Builder.build(list.iterator(), "\t"));
+    assertTrue(Builder.isValidArray(Collections.enumeration(list)));
+    assertEquals("[0.2,3.1,0,4,0.01]", Builder.build(Collections.enumeration(list)));
+    assertEquals("[\n  0.2,\n  3.1,\n  0,\n  4,\n  0.01\n]",
+                 Builder.build(Collections.enumeration(list), true));
+    assertEquals("[\n\t0.2,\n\t3.1,\n\t0,\n\t4,\n\t0.01\n]",
+                 Builder.build(Collections.enumeration(list), "\t"));
   }
 
   @Test
@@ -146,12 +200,26 @@ public class TestBuilder {
     final long t2 = System.currentTimeMillis();
     final List<?> list = list(t1, t2);
     assertTrue(Builder.isValidArray(list));
-    final Object parsed = Parser.parse(Builder.build(list));
-    assertTrue(parsed instanceof List);
-    final List list2 = (List)parsed;
-    assertEquals(2, list2.size());
-    assertEquals(t1, list2.get(0));
-    assertEquals(t2, list2.get(1));
+    final Object parsedList = Parser.parse(Builder.build(list));
+    assertTrue(parsedList instanceof List);
+    final List parsedList2 = (List)parsedList;
+    assertEquals(2, parsedList2.size());
+    assertEquals(t1, parsedList2.get(0));
+    assertEquals(t2, parsedList2.get(1));
+    assertTrue(Builder.isValidArray(list.iterator()));
+    final Object parsedIterator = Parser.parse(Builder.build(list.iterator(), true));
+    assertTrue(parsedIterator instanceof List);
+    final List parsedIterator2 = (List)parsedList;
+    assertEquals(2, parsedIterator2.size());
+    assertEquals(t1, parsedIterator2.get(0));
+    assertEquals(t2, parsedIterator2.get(1));
+    assertTrue(Builder.isValidArray(Collections.enumeration(list)));
+    final Object parsedEnumeration = Parser.parse(Builder.build(Collections.enumeration(list), "\t"));
+    assertTrue(parsedEnumeration instanceof List);
+    final List parsedEnumeration2 = (List)parsedList;
+    assertEquals(2, parsedEnumeration2.size());
+    assertEquals(t1, parsedEnumeration2.get(0));
+    assertEquals(t2, parsedEnumeration2.get(1));
   }
 
   @Test
@@ -163,10 +231,25 @@ public class TestBuilder {
     assertTrue(Builder.isValidObject(map));
     final Object parsed = Parser.parse(Builder.build(map));
     assertTrue(parsed instanceof Map);
-    final Map map2 = (Map)parsed;
-    assertEquals(2, map2.size());
-    assertEquals(t1, map2.get("a"));
-    assertEquals(t2, map2.get("b"));
+    // noinspection unchecked
+    final Map<String, ?> parsedMap = (Map<String, ?>)parsed;
+    assertEquals(2, parsedMap.size());
+    assertEquals(t1, parsedMap.get("a"));
+    assertEquals(t2, parsedMap.get("b"));
+    final Object parsed2 = Parser.parse(Builder.build(map, true));
+    assertTrue(parsed2 instanceof Map);
+    // noinspection unchecked
+    final Map<String, ?> parsedMap2 = (Map<String, ?>)parsed2;
+    assertEquals(2, parsedMap2.size());
+    assertEquals(t1, parsedMap2.get("a"));
+    assertEquals(t2, parsedMap2.get("b"));
+    final Object parsed3 = Parser.parse(Builder.build(map, "\t"));
+    assertTrue(parsed3 instanceof Map);
+    // noinspection unchecked
+    final Map<String, ?> parsedMap3 = (Map<String, ?>)parsed3;
+    assertEquals(2, parsedMap3.size());
+    assertEquals(t1, parsedMap3.get("a"));
+    assertEquals(t2, parsedMap3.get("b"));
   }
 
   @Test
@@ -174,6 +257,10 @@ public class TestBuilder {
     final Map<String, ?> map = map(kv("key_a","value \"a\""), kv("a\tb", "\n"));
     assertTrue(Builder.isValidObject(map));
     assertEquals("{\"key_a\":\"value \\\"a\\\"\",\"a\\tb\":\"\\n\"}", Builder.build(map));
+    assertEquals("{\n  \"key_a\": \"value \\\"a\\\"\",\n  \"a\\tb\": \"\\n\"\n}",
+                 Builder.build(map, true));
+    assertEquals("{\n\t\"key_a\": \"value \\\"a\\\"\",\n\t\"a\\tb\": \"\\n\"\n}",
+                 Builder.build(map, "\t"));
   }
 
   @Test
@@ -181,6 +268,23 @@ public class TestBuilder {
     final List<?> list = list("a", "abc", "\n", "\"quotes\"");
     assertTrue(Builder.isValidArray(list));
     assertEquals("[\"a\",\"abc\",\"\\n\",\"\\\"quotes\\\"\"]", Builder.build(list));
+    assertEquals("[\n  \"a\",\n  \"abc\",\n  \"\\n\",\n  \"\\\"quotes\\\"\"\n]",
+                 Builder.build(list, true));
+    assertEquals("[\n\t\"a\",\n\t\"abc\",\n\t\"\\n\",\n\t\"\\\"quotes\\\"\"\n]",
+                 Builder.build(list, "\t"));
+    assertTrue(Builder.isValidArray(list.iterator()));
+    assertEquals("[\"a\",\"abc\",\"\\n\",\"\\\"quotes\\\"\"]", Builder.build(list.iterator()));
+    assertEquals("[\n  \"a\",\n  \"abc\",\n  \"\\n\",\n  \"\\\"quotes\\\"\"\n]",
+                 Builder.build(list.iterator(), true));
+    assertEquals("[\n\t\"a\",\n\t\"abc\",\n\t\"\\n\",\n\t\"\\\"quotes\\\"\"\n]",
+                 Builder.build(list.iterator(), "\t"));
+    assertTrue(Builder.isValidArray(Collections.enumeration(list)));
+    assertEquals("[\"a\",\"abc\",\"\\n\",\"\\\"quotes\\\"\"]",
+                 Builder.build(Collections.enumeration(list)));
+    assertEquals("[\n  \"a\",\n  \"abc\",\n  \"\\n\",\n  \"\\\"quotes\\\"\"\n]",
+                 Builder.build(Collections.enumeration(list), true));
+    assertEquals("[\n\t\"a\",\n\t\"abc\",\n\t\"\\n\",\n\t\"\\\"quotes\\\"\"\n]",
+                 Builder.build(Collections.enumeration(list), "\t"));
   }
 
   @Test
@@ -191,6 +295,10 @@ public class TestBuilder {
     );
     assertTrue(Builder.isValidObject(map));
     assertEquals("{\"key_a\":\"value \\\"a\\\"\",\"a\\tb\":\"\\n\"}", Builder.build(map));
+    assertEquals("{\n  \"key_a\": \"value \\\"a\\\"\",\n  \"a\\tb\": \"\\n\"\n}",
+                 Builder.build(map, true));
+    assertEquals("{\n\t\"key_a\": \"value \\\"a\\\"\",\n\t\"a\\tb\": \"\\n\"\n}",
+                 Builder.build(map, "\t"));
   }
 
   @Test
@@ -200,6 +308,10 @@ public class TestBuilder {
     map.put(new StringBuilder("a\tb"), new StringBuilder("\n"));
     assertTrue(Builder.isValidObject(map));
     assertEquals("{\"key_a\":\"value \\\"a\\\"\",\"a\\tb\":\"\\n\"}", Builder.build(map));
+    assertEquals("{\n  \"key_a\": \"value \\\"a\\\"\",\n  \"a\\tb\": \"\\n\"\n}",
+                 Builder.build(map, true));
+    assertEquals("{\n\t\"key_a\": \"value \\\"a\\\"\",\n\t\"a\\tb\": \"\\n\"\n}",
+                 Builder.build(map, "\t"));
   }
 
   @Test
@@ -208,6 +320,10 @@ public class TestBuilder {
     assertTrue(Builder.isValidObject(map));
     assertTrue(Builder.isValidArray((List)map.get("b")));
     assertEquals("{\"a\":true,\"b\":[true,false,true]}", Builder.build(map));
+    assertEquals("{\n  \"a\": true,\n  \"b\": [\n    true,\n    false,\n    true\n  ]\n}",
+                 Builder.build(map, true));
+    assertEquals("{\n\t\"a\": true,\n\t\"b\": [\n\t\ttrue,\n\t\tfalse,\n\t\ttrue\n\t]\n}",
+                 Builder.build(map, "\t"));
   }
 
   @Test
@@ -218,6 +334,14 @@ public class TestBuilder {
     assertTrue(Builder.isValidObject(map));
     assertEquals("{\"a\":\"v\",\"b\":[\"a\",2,true],\"c\":{\"c1\":true,\"c2\":[\"val\"]},\"d\":[[1,2,3],{}]}",
                  Builder.build(map));
+    assertEquals("{\n  \"a\": \"v\",\n  \"b\": [\n    \"a\",\n    2,\n    true\n  ],\n  \"c\": " +
+                 "{\n    \"c1\": true,\n    \"c2\": [\n      \"val\"\n    ]\n  },\n  \"d\": " +
+                 "[\n    [\n      1,\n      2,\n      3\n    ],\n    {}\n  ]\n}",
+                 Builder.build(map, true));
+    assertEquals("{\n\t\"a\": \"v\",\n\t\"b\": [\n\t\t\"a\",\n\t\t2,\n\t\ttrue\n\t],\n\t\"c\": " +
+                 "{\n\t\t\"c1\": true,\n\t\t\"c2\": [\n\t\t\t\"val\"\n\t\t]\n\t},\n\t\"d\": " +
+                 "[\n\t\t[\n\t\t\t1,\n\t\t\t2,\n\t\t\t3\n\t\t],\n\t\t{}\n\t]\n}",
+                 Builder.build(map, "\t"));
   }
 
   @Test
@@ -226,6 +350,12 @@ public class TestBuilder {
     assertTrue(Builder.isValidArray(list));
     assertEquals("[\"a\",\"b\",{\"k\":3.5,\"e\":{}},[{},true],5,false]",
                  Builder.build(list));
+    assertEquals("[\n  \"a\",\n  \"b\",\n  {\n    \"k\": 3.5,\n    \"e\": {}\n  },\n  " +
+                 "[\n    {},\n    true\n  ],\n  5,\n  false\n]",
+                 Builder.build(list, true));
+    assertEquals("[\n\t\"a\",\n\t\"b\",\n\t{\n\t\t\"k\": 3.5,\n\t\t\"e\": {}\n\t},\n\t" +
+                 "[\n\t\t{},\n\t\ttrue\n\t],\n\t5,\n\tfalse\n]",
+                 Builder.build(list, "\t"));
   }
 
 }

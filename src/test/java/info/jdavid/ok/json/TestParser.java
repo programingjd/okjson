@@ -1,8 +1,11 @@
 package info.jdavid.ok.json;
 
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
+import junit.framework.AssertionFailedError;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -148,30 +151,35 @@ public class TestParser {
     assertNull(parsed);
   }
 
+  @SuppressWarnings("unchecked")
   @Test
   public void testParseJsonObject0() {
-    final String str = "{}";
-    final Object parsed = Parser.parse(str);
+    final Object parsed = Parser.parse("{}");
     assertTrue(parsed instanceof Map);
     //noinspection unchecked
     final Map<String, ?> map = (Map<String, ?>)parsed;
     assertEquals(0, map.size());
+    assertSame(map, (Map<String, ?>)Parser.parse("{\n}"));
+    assertSame(map, (Map<String, ?>)Parser.parse("{ }"));
+    assertSame(map, (Map<String, ?>)Parser.parse("{\t\n }"));
   }
 
   @Test
   public void testParseJsonArray0() {
-    final String str = "[]";
-    final Object parsed = Parser.parse(str);
+    final Object parsed = Parser.parse("[]");
     assertTrue(parsed instanceof List);
     //noinspection unchecked
     final List<?> list = (List<?>)parsed;
     assertEquals(0, list.size());
+    assertSame(list, (List<?>)Parser.parse("[\n]"));
+    assertSame(list, (List<?>)Parser.parse("[ ]"));
+    assertSame(list, (List<?>)Parser.parse("[\t\n ]"));
   }
 
+  @SuppressWarnings("unchecked")
   @Test
   public void testParseJsonObject1() {
-    final String str = "{\"root\":{}}";
-    final Object parsed = Parser.parse(str);
+    final Object parsed = Parser.parse("{\"root\":{}}");
     assertTrue(parsed instanceof Map);
     //noinspection unchecked
     final Map<String, ?> map = (Map<String, ?>)parsed;
@@ -182,12 +190,14 @@ public class TestParser {
     //noinspection unchecked
     final Map<String, ?> rootMap = (Map<String, ?>)rootValue;
     assertEquals(0, rootMap.size());
+    assertSame(map, (Map<String, ?>)Parser.parse("{\n  \"root\": {}\n}"));
+    assertSame(map, (Map<String, ?>)Parser.parse("{\n\t\"root\": {}\n}"));
   }
 
+  @SuppressWarnings("unchecked")
   @Test
   public void testParseJsonArray1() {
-    final String str = "{\"root\":[]}";
-    final Object parsed = Parser.parse(str);
+    final Object parsed = Parser.parse("{\"root\":[]}");
     assertTrue(parsed instanceof Map);
     //noinspection unchecked
     final Map<String, ?> map = (Map<String, ?>)parsed;
@@ -198,12 +208,16 @@ public class TestParser {
     //noinspection unchecked
     final List<?> rootList = (List<?>)rootValue;
     assertEquals(0, rootList.size());
+    assertSame(map, (Map<String, ?>)Parser.parse(Builder.build(map, true)));
+    assertSame(map, (Map<String, ?>)Parser.parse(Builder.build(map, "\t")));
   }
 
+  @SuppressWarnings("unchecked")
   @Test
   public void testParseJsonObject2() {
-    final String str = "{\"a\":[1,2,3,4],\"b\":{\"b1\":\"text\",\"b2\":{}},\"c\":2.55,\"d\":true}";
-    final Object parsed = Parser.parse(str);
+    final Object parsed = Parser.parse(
+      "{\"a\":[1,2,3,4],\"b\":{\"b1\":\"text\",\"b2\":{}},\"c\":2.55,\"d\":true}"
+    );
     assertTrue(parsed instanceof Map);
     //noinspection unchecked
     final Map<String, ?> map = (Map<String, ?>)parsed;
@@ -233,6 +247,46 @@ public class TestParser {
     assertEquals(0, b2Map.size());
     assertEquals(2.55, map.get("c"));
     assertEquals(true, map.get("d"));
+    assertSame(map, (Map<String, ?>)Parser.parse(Builder.build(map, true)));
+    assertSame(map, (Map<String, ?>)Parser.parse(Builder.build(map, "\t")));
+  }
+
+  @SuppressWarnings("unchecked")
+  private void assertSame(final Map<String, ?> expected, final Map<String, ?> actual) {
+    if (expected.size() != actual.size()) throw new AssertionFailedError();
+    final Iterator<?> entryIterator1 = expected.entrySet().iterator();
+    final Iterator<?> entryIterator2 = expected.entrySet().iterator();
+    while (entryIterator1.hasNext()) {
+      final Map.Entry<String, ?> entry1 = (Map.Entry<String, ?>)entryIterator1.next();
+      final Map.Entry<String, ?> entry2 = (Map.Entry<String, ?>)entryIterator2.next();
+      assertEquals(entry1.getKey(), entry2.getKey());
+      final Object value1 = entry1.getValue();
+      final Object value2 = entry2.getValue();
+      assertSame(value1, value2);
+    }
+  }
+
+  private void assertSame(final List<?> expected, final List<?> actual) {
+    assertEquals(expected.size(), actual.size());
+    final Iterator<?> listIterator1 = expected.iterator();
+    final Iterator<?> listIterator2 = actual.iterator();
+    while (listIterator1.hasNext()) {
+      assertSame(listIterator1.next(), listIterator2.next());
+    }
+  }
+
+  @SuppressWarnings("unchecked")
+  private void assertSame(final Object expected, final Object actual) {
+    if (expected instanceof Map) {
+      assertSame((Map<String, ?>)expected, (Map<String, ?>)actual);
+    }
+    else if (expected instanceof List) {
+      assertSame((List<?>)expected, (List<?>)actual);
+
+    }
+    else {
+      assertEquals(expected, actual);
+    }
   }
 
 }
