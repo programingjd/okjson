@@ -3,13 +3,15 @@ package info.jdavid.ok.json;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import junit.framework.AssertionFailedError;
+import okio.Buffer;
+import okio.BufferedSource;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
+
 
 //@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class TestParser {
@@ -22,6 +24,20 @@ public class TestParser {
       Parser.parse("[{}]");
     }
     catch (Exception ignore) {}
+  }
+
+  @Test
+  public void testParseFromSource() {
+    assertNull(Parser.parse((BufferedSource)null));
+    final Buffer buffer = new Buffer();
+    buffer.writeUtf8("{\n  \"a\": [\n    1\n  ]\n}");
+    final Map<String, ?> map = Parser.parse(buffer);
+    assertNotNull(map);
+    assertEquals(1, map.size());
+    final List<?> list = (List<?>)map.get("a");
+    assertNotNull(map);
+    assertEquals(1, list.size());
+    assertEquals(1, list.get(0));
   }
 
   @Test
