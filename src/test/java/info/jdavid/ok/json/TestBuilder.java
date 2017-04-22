@@ -545,12 +545,29 @@ public class TestBuilder {
     final Map<String, ?> map = map(kv("iterator", Arrays.asList("a", "b", "c").iterator()),
                                    kv("enumeration", Collections.enumeration(Arrays.asList(1, 2, 3))),
                                    kv("null", null));
+    assertTrue(Builder.isValidObject(map));
+  }
+
+  @Test
+  public void testMixed4() {
+    final Map<String, ?> map = map(kv("iterator", Arrays.asList("a", "b", "c").iterator()),
+                                   kv("enumeration", Collections.enumeration(Arrays.asList(1, 2, 3))),
+                                   kv("null", null));
     assertEquals("{\"iterator\":[\"a\",\"b\",\"c\"],\"enumeration\":[1,2,3]}",
                  Builder.build(map));
   }
 
   @Test
-  public void testMixed4() {
+  public void testMixed5() {
+    final Map<String, ?> map =
+      map(kv("a", Arrays.asList("a", Collections.emptyList().iterator()).iterator()),
+          kv("b", Collections.enumeration(Arrays.asList(1, 2,
+                                                        Collections.enumeration(Collections.emptyList())))));
+    assertTrue(Builder.isValidObject(map));
+  }
+
+  @Test
+  public void testMixed6() {
     final Map<String, ?> map =
       map(kv("a", Arrays.asList("a", Collections.emptyList().iterator()).iterator()),
           kv("b", Collections.enumeration(Arrays.asList(1, 2,
