@@ -479,11 +479,11 @@ public class TestBuilder {
     assertEquals("{\n\t\"key_a\": \"value \\\"a\\\"\",\n\t\"a\\tb\": \"\\n\"\n}",
                  Builder.build(map, "\t"));
     final List<?> list = list(
-      new StringBuilder("a"), new StringBuffer("b")
+      new StringBuilder("a"), new StringBuffer("b"), null
     );
-    assertEquals("[\"a\",\"b\"]", Builder.build(list));
-    assertEquals("[\"a\",\"b\"]", Builder.build(list.iterator()));
-    assertEquals("[\"a\",\"b\"]", Builder.build(Collections.enumeration(list)));
+    assertEquals("[\"a\",\"b\",null]", Builder.build(list));
+    assertEquals("[\"a\",\"b\",null]", Builder.build(list.iterator()));
+    assertEquals("[\"a\",\"b\",null]", Builder.build(Collections.enumeration(list)));
   }
 
   @Test
