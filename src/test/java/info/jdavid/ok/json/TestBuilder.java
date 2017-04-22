@@ -1,6 +1,9 @@
 package info.jdavid.ok.json;
 
 import java.io.IOException;
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -14,6 +17,7 @@ import java.util.Set;
 import java.util.Vector;
 
 import okio.Buffer;
+import okio.BufferedSink;
 import okio.Okio;
 import okio.Sink;
 import okio.Timeout;
@@ -101,19 +105,19 @@ public class TestBuilder {
   @Test
   public void testThrowingSink() {
     final ThrowingSink sink1 = new ThrowingSink(true, false);
-    Builder.build(Okio.buffer(sink1), Collections.<String, Object>emptyMap());
+    Builder.build(sink1.sink(), Collections.<String, Object>emptyMap());
     assertEquals(0, sink1.buffer.size());
-    Builder.build(Okio.buffer(sink1), Collections.emptyList());
+    Builder.build(sink1.sink(), Collections.emptyList());
     assertEquals(0, sink1.buffer.size());
     final ThrowingSink sink2 = new ThrowingSink(true, true);
-    Builder.build(Okio.buffer(sink2), Collections.<String, Object>emptyMap());
+    Builder.build(sink2.sink(), Collections.<String, Object>emptyMap());
     assertEquals(0, sink2.buffer.size());
-    Builder.build(Okio.buffer(sink2), Collections.emptyList());
+    Builder.build(sink2.sink(), Collections.emptyList());
     assertEquals(0, sink2.buffer.size());
     final ThrowingSink sink3 = new ThrowingSink(false, true);
-    Builder.build(Okio.buffer(sink3), Collections.<String, Object>emptyMap());
+    Builder.build(sink3.sink(), Collections.<String, Object>emptyMap());
     assertEquals("{}", sink3.buffer.readUtf8());
-    Builder.build(Okio.buffer(sink3), Collections.emptyList());
+    Builder.build(sink3.sink(), Collections.emptyList());
     assertEquals("[]", sink3.buffer.readUtf8());
   }
 
@@ -493,7 +497,14 @@ public class TestBuilder {
   }
 
 
-  private static class ThrowingSink implements Sink {
+  private static class ThrowingSink implements InvocationHandler {
+
+    public static BufferedSink proxy(final ThrowingSink sink) {
+      final Buffer buffer = new Buffer();
+      return (BufferedSink)Proxy.newProxyInstance(buffer.getClass().getClassLoader(),
+                                                  buffer.getClass().getInterfaces(),
+                                                  sink);
+    }
 
     private final Buffer buffer = new Buffer();
     private final boolean onWrite;
@@ -504,22 +515,15 @@ public class TestBuilder {
       this.onClose = onClose;
     }
 
-    @Override public void write(final Buffer source, final long byteCount) throws IOException {
-      if (onWrite) throw new IOException();
-      buffer.write(source, byteCount);
+    @Override public Object invoke(final Object proxy, final Method method,
+                                   final Object[] args) throws Throwable {
+      if (onWrite && method.getName().contains("write")) throw new IOException();
+      if (onClose && method.getName().equals("close")) throw new IOException();
+      return method.invoke(buffer, args);
     }
 
-    @Override public void flush() throws IOException {
-      buffer.flush();
-    }
-
-    @Override public Timeout timeout() {
-      return null;
-    }
-
-    @Override public void close() throws IOException {
-      buffer.close();
-      if (onClose) throw new IOException();
+    public BufferedSink sink() {
+      return proxy(this);
     }
 
   }
