@@ -14,13 +14,14 @@ import java.util.Set;
 import java.util.Vector;
 
 import okio.Buffer;
-import okio.BufferedSink;
+import okio.Okio;
 import okio.Sink;
 import okio.Timeout;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
+
 
 //@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class TestBuilder {
@@ -98,6 +99,25 @@ public class TestBuilder {
   }
 
   @Test
+  public void testThrowingSink() {
+    final ThrowingSink sink1 = new ThrowingSink(true, false);
+    Builder.build(Okio.buffer(sink1), Collections.<String, Object>emptyMap());
+    assertEquals(0, sink1.buffer.size());
+    Builder.build(Okio.buffer(sink1), Collections.emptyList());
+    assertEquals(0, sink1.buffer.size());
+    final ThrowingSink sink2 = new ThrowingSink(true, true);
+    Builder.build(Okio.buffer(sink2), Collections.<String, Object>emptyMap());
+    assertEquals(0, sink2.buffer.size());
+    Builder.build(Okio.buffer(sink2), Collections.emptyList());
+    assertEquals(0, sink2.buffer.size());
+    final ThrowingSink sink3 = new ThrowingSink(false, true);
+    Builder.build(Okio.buffer(sink3), Collections.<String, Object>emptyMap());
+    assertEquals("{}", sink3.buffer.readUtf8());
+    Builder.build(Okio.buffer(sink3), Collections.emptyList());
+    assertEquals("[]", sink3.buffer.readUtf8());
+  }
+
+  @Test
   public void testBuildNullMap() {
     //noinspection unchecked
     final String built = Builder.build((Map<String, ?>)null);
@@ -134,7 +154,18 @@ public class TestBuilder {
 
   @Test
   public void testBuildIterableToSink() {
+    Builder.build(null, Collections.<String, Object>emptyMap());
     Builder.build(null, Collections.emptyList());
+    Builder.build(null, Collections.emptyList().iterator());
+    Builder.build(null, Collections.enumeration(Collections.emptyList()));
+    Builder.build(null, Collections.<String, Object>emptyMap(), false);
+    Builder.build(null, Collections.emptyList(), false);
+    Builder.build(null, Collections.emptyList().iterator(), false);
+    Builder.build(null, Collections.enumeration(Collections.emptyList()), false);
+    Builder.build(null, Collections.<String, Object>emptyMap(), true);
+    Builder.build(null, Collections.emptyList(), "  ");
+    Builder.build(null, Collections.emptyList().iterator(), "  ");
+    Builder.build(null, Collections.enumeration(Collections.emptyList()), "  ");
     final Buffer buffer = new Buffer();
     Builder.build(buffer, (Iterable<?>)null);
     assertEquals(0, buffer.size());
@@ -143,6 +174,18 @@ public class TestBuilder {
     Builder.build(buffer, (Iterable<?>)null, true);
     assertEquals(0, buffer.size());
     Builder.build(buffer, (Iterable<?>)null, "  ");
+    assertEquals(0, buffer.size());
+    Builder.build(buffer, (Iterator<?>)null, false);
+    assertEquals(0, buffer.size());
+    Builder.build(buffer, (Iterator<?>)null, true);
+    assertEquals(0, buffer.size());
+    Builder.build(buffer, (Iterator<?>)null, "  ");
+    assertEquals(0, buffer.size());
+    Builder.build(buffer, (Enumeration<?>)null, false);
+    assertEquals(0, buffer.size());
+    Builder.build(buffer, (Enumeration<?>)null, true);
+    assertEquals(0, buffer.size());
+    Builder.build(buffer, (Enumeration<?>)null, "  ");
     assertEquals(0, buffer.size());
     Builder.build(buffer, Collections.emptyList());
     assertEquals("[]", buffer.readUtf8());
