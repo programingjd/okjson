@@ -5,6 +5,7 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.Enumeration;
@@ -536,6 +537,15 @@ public class TestBuilder {
                  Builder.build(list, "\t"));
   }
 
+  @Test
+  public void testMixed3() {
+    final Map<String, ?> map = map(kv("iterator", Arrays.asList("a", "b", "c").iterator()),
+                                   kv("enumeration", Collections.enumeration(Arrays.asList(1, 2, 3))),
+                                   kv("null", null));
+    assertEquals("{\"iterator\":[\"a\",\"b\",\"c\"],\"enumeration\":[1,2,3]}",
+                 Builder.build(map));
+
+  }
 
   private static class ThrowingSink implements InvocationHandler {
 
