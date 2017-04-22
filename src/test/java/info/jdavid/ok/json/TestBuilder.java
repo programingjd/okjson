@@ -1,5 +1,6 @@
 package info.jdavid.ok.json;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -13,6 +14,9 @@ import java.util.Set;
 import java.util.Vector;
 
 import okio.Buffer;
+import okio.BufferedSink;
+import okio.Sink;
+import okio.Timeout;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -62,6 +66,38 @@ public class TestBuilder {
   }
 
   @Test
+  public void testWrongUnsafeCast() {
+    final Map<Object, Object> map = new HashMap<Object, Object>();
+    map.put(Boolean.TRUE, "test");
+    //noinspection unchecked
+    assertFalse(Builder.isValidObject((Map)map));
+  }
+
+  @Test
+  public void testInvalidIndentationString() {
+    try {
+      Builder.build(Collections.<String, Object>emptyMap(), "++");
+      fail();
+    }
+    catch (final IllegalArgumentException ignore) {}
+    try {
+      Builder.build(Collections.emptyList(), "--");
+      fail();
+    }
+    catch (final IllegalArgumentException ignore) {}
+    try {
+      Builder.build(Collections.emptyList().iterator(), "a");
+      fail();
+    }
+    catch (final IllegalArgumentException ignore) {}
+    try {
+      Builder.build(Collections.enumeration(Collections.emptyList()), "___");
+      fail();
+    }
+    catch (final IllegalArgumentException ignore) {}
+  }
+
+  @Test
   public void testBuildNullMap() {
     //noinspection unchecked
     final String built = Builder.build((Map<String, ?>)null);
@@ -82,6 +118,7 @@ public class TestBuilder {
 
   @Test
   public void testBuildMapToSink() {
+    Builder.build(null, Collections.<String, Object>emptyMap());
     final Buffer buffer = new Buffer();
     Builder.build(buffer, (Map<String, ?>)null);
     assertEquals(0, buffer.size());
@@ -96,7 +133,8 @@ public class TestBuilder {
   }
 
   @Test
-  public void testBuildListToSink() {
+  public void testBuildIterableToSink() {
+    Builder.build(null, Collections.emptyList());
     final Buffer buffer = new Buffer();
     Builder.build(buffer, (Iterable<?>)null);
     assertEquals(0, buffer.size());
@@ -107,6 +145,22 @@ public class TestBuilder {
     Builder.build(buffer, (Iterable<?>)null, "  ");
     assertEquals(0, buffer.size());
     Builder.build(buffer, Collections.emptyList());
+    assertEquals("[]", buffer.readUtf8());
+    Builder.build(buffer, Collections.emptyList().iterator());
+    assertEquals("[]", buffer.readUtf8());
+    Builder.build(buffer, Collections.enumeration(Collections.emptyList()));
+    assertEquals("[]", buffer.readUtf8());
+    Builder.build(buffer, Collections.emptyList().iterator(), false);
+    assertEquals("[]", buffer.readUtf8());
+    Builder.build(buffer, Collections.enumeration(Collections.emptyList()), false);
+    assertEquals("[]", buffer.readUtf8());
+    Builder.build(buffer, Collections.emptyList().iterator(), true);
+    assertEquals("[]", buffer.readUtf8());
+    Builder.build(buffer, Collections.enumeration(Collections.emptyList()), true);
+    assertEquals("[]", buffer.readUtf8());
+    Builder.build(buffer, Collections.emptyList().iterator(), "  ");
+    assertEquals("[]", buffer.readUtf8());
+    Builder.build(buffer, Collections.enumeration(Collections.emptyList()), "  ");
     assertEquals("[]", buffer.readUtf8());
   }
 
@@ -393,6 +447,38 @@ public class TestBuilder {
     assertEquals("[\n\t\"a\",\n\t\"b\",\n\t{\n\t\t\"k\": 3.5,\n\t\t\"e\": {}\n\t},\n\t" +
                  "[\n\t\t{},\n\t\ttrue\n\t],\n\t5,\n\tfalse\n]",
                  Builder.build(list, "\t"));
+  }
+
+
+  private static class ThrowingSink implements Sink {
+
+    private final Buffer buffer = new Buffer();
+    private final boolean onWrite;
+    private final boolean onClose;
+
+    public ThrowingSink(final boolean onWrite, final boolean onClose) {
+      this.onWrite = onWrite;
+      this.onClose = onClose;
+    }
+
+    @Override public void write(final Buffer source, final long byteCount) throws IOException {
+      if (onWrite) throw new IOException();
+      buffer.write(source, byteCount);
+    }
+
+    @Override public void flush() throws IOException {
+      buffer.flush();
+    }
+
+    @Override public Timeout timeout() {
+      return null;
+    }
+
+    @Override public void close() throws IOException {
+      buffer.close();
+      if (onClose) throw new IOException();
+    }
+
   }
 
 }
