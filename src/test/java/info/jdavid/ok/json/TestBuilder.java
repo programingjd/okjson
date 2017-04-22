@@ -12,6 +12,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
 
+import okio.Buffer;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -65,12 +66,48 @@ public class TestBuilder {
     //noinspection unchecked
     final String built = Builder.build((Map<String, ?>)null);
     assertNull(built);
+    assertNull(Builder.build((Map<String, ?>)null, false));
+    assertNull(Builder.build((Map<String, ?>)null, true));
+    assertNull(Builder.build((Map<String, ?>)null, "  "));
   }
 
   @Test
   public void testBuildNullList() {
     final String built = Builder.build((Iterable<?>)null);
     assertNull(built);
+    assertNull(Builder.build((Iterable<?>)null, false));
+    assertNull(Builder.build((Iterable<?>)null, true));
+    assertNull(Builder.build((Iterable<?>)null, "  "));
+  }
+
+  @Test
+  public void testBuildMapToSink() {
+    final Buffer buffer = new Buffer();
+    Builder.build(buffer, (Map<String, ?>)null);
+    assertEquals(0, buffer.size());
+    Builder.build(buffer, (Map<String, ?>)null, false);
+    assertEquals(0, buffer.size());
+    Builder.build(buffer, (Map<String, ?>)null, true);
+    assertEquals(0, buffer.size());
+    Builder.build(buffer, (Map<String, ?>)null, "  ");
+    assertEquals(0, buffer.size());
+    Builder.build(buffer, Collections.<String, Object>emptyMap());
+    assertEquals("{}", buffer.readUtf8());
+  }
+
+  @Test
+  public void testBuildListToSink() {
+    final Buffer buffer = new Buffer();
+    Builder.build(buffer, (Iterable<?>)null);
+    assertEquals(0, buffer.size());
+    Builder.build(buffer, (Iterable<?>)null, false);
+    assertEquals(0, buffer.size());
+    Builder.build(buffer, (Iterable<?>)null, true);
+    assertEquals(0, buffer.size());
+    Builder.build(buffer, (Iterable<?>)null, "  ");
+    assertEquals(0, buffer.size());
+    Builder.build(buffer, Collections.emptyList());
+    assertEquals("[]", buffer.readUtf8());
   }
 
   @Test
