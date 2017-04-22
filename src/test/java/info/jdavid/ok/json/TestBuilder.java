@@ -478,6 +478,12 @@ public class TestBuilder {
                  Builder.build(map, true));
     assertEquals("{\n\t\"key_a\": \"value \\\"a\\\"\",\n\t\"a\\tb\": \"\\n\"\n}",
                  Builder.build(map, "\t"));
+    final List<?> list = list(
+      new StringBuilder("a"), new StringBuffer("b")
+    );
+    assertEquals("[\"a\",\"b\"]", Builder.build(list));
+    assertEquals("[\"a\",\"b\"]", Builder.build(list.iterator()));
+    assertEquals("[\"a\",\"b\"]", Builder.build(Collections.enumeration(list)));
   }
 
   @Test
@@ -544,7 +550,6 @@ public class TestBuilder {
                                    kv("null", null));
     assertEquals("{\"iterator\":[\"a\",\"b\",\"c\"],\"enumeration\":[1,2,3]}",
                  Builder.build(map));
-
   }
 
   private static class ThrowingSink implements InvocationHandler {
