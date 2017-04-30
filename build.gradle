@@ -3,7 +3,6 @@ buildscript {
     jcenter()
   }
   dependencies {
-    classpath 'net.saliman:gradle-cobertura-plugin:2.4.0'
     classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.7.3'
     classpath 'org.jsoup:jsoup:1.10.2'
   }
@@ -13,8 +12,7 @@ group 'info.jdavid.ok.json'
 version '3.7.0.0'
 
 apply plugin: 'java'
-//apply plugin: 'jacoco'
-apply plugin: 'cobertura'
+apply plugin: 'jacoco'
 apply plugin: 'maven-publish'
 apply plugin: 'com.jfrog.bintray'
 
@@ -32,47 +30,44 @@ dependencies {
   compile 'com.squareup.okio:okio:1.12.0'
   compile 'com.squareup.moshi:moshi:1.4.0'
   testCompile 'junit:junit:4.12'
-  testRuntime 'org.slf4j:slf4j-api:1.7.25'
 }
 
 
-//jacoco {
-//  reportsDir = file("$buildDir/jacoco/reports")
-//}
+jacoco {
+  reportsDir = file("$buildDir/jacoco/reports")
+}
 
-//jacocoTestReport {
-//  reports {
-//    xml.enabled true
-//    csv.enabled false
-//    html.enabled true
-//  }
-//}
-
-cobertura {
-  coverageFormats = [ 'html', 'xml' ]
-  coverageEncoding = 'UTF-8'
-  coverageIgnoreTrivial = true
-  coverageReportDir = file("$buildDir/reports/coverage")
+jacocoTestReport {
+  reports {
+    xml.enabled false
+    csv.enabled false
+    html.enabled true
+  }
 }
 
 test {
-//  jacoco {
-//    append = false
-//    destinationFile = file("$buildDir/jacoco/jacocoTest.exec")
-//    classDumpFile = file("$buildDir/jacoco/classpathdumps")
-//  }
+  jacoco {
+    append = false
+    destinationFile = file("$buildDir/jacoco/jacocoTest.exec")
+    classDumpFile = file("$buildDir/jacoco/classpathdumps")
+  }
   doLast {
     File html = reports.html.entryPoint
     def doc = org.jsoup.Jsoup.parse(html, 'UTF-8')
     int total = doc.select('#tests > .counter').text() as int
     int failed = doc.select('#failures > .counter').text() as int
-
+    html = jacocoTestReport.reports.html.entryPoint
+    doc = org.jsoup.Jsoup.parse(html, 'UTF-8')
+    def imgs = doc.select('table.coverage>tbody>tr>.bar>img')
+    int missed = (imgs[0].attr('title').replaceAll(',','') as int) +
+                 (imgs[2].attr('title').replaceAll(',','') as int)
+    int all = (imgs[1].attr('title').replaceAll(',','') as int) +
+              (imgs[3].attr('title').replaceAll(',','') as int) + missed
+    int coverage = (100 * (all - missed) / all) as int
     def readme = file('README.md')
     def badge = { String label, String text, String color ->
       "https://img.shields.io/badge/_${label}_-_${text}-${color}.png?style=flat"
     }
-    String label = 'Tests'
-    String text = "${total-failed}/${total}"
     String color = failed == 0 ? 'green' : (failed < 3 ? 'yellow' : 'red')
     String v = project.version
     def download =
@@ -80,7 +75,9 @@ test {
     readme.readLines().withIndex().collect { line, i ->
       switch (i) {
         case 0:
-          return "![jcenter](${badge('jcenter',v,'6688ff')}) &#x2003; ![jcenter](${badge(label,text,color)})"
+          return "![jcenter](${badge('jcenter', v, '6688ff')}) &#x2003; " +
+                 "![jcenter](${badge('Tests', "${total-failed}/${total}", color)}) &#x2003; " +
+                 "![jcenter](${badge('Coverage', "${coverage}%25", 'blue')})"
         case 11: return "[Download](${download}) the latest jar."
         case 21: return "  <version>${v}</version>"
         case 34: return "  compile 'info.jdavid.ok.json:okjson:${v}'"
@@ -88,8 +85,7 @@ test {
       }
     }.join('\n').with { readme.text = it }
   }
-//  finalizedBy tasks.jacocoTestReport
-  finalizedBy tasks.cobertura
+  finalizedBy tasks.jacocoTestReport
 }
 
 task javadocJar(type: Jar, dependsOn: javadoc) {
