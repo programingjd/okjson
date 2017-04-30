@@ -107,11 +107,15 @@ public class TestBuilder {
     assertEquals(0, sink1.buffer.size());
     Builder.build(sink1.sink(), Collections.<String, Object>emptyMap(), false);
     assertEquals(0, sink1.buffer.size());
+    Builder.build(sink1.sink(), Collections.<String, Object>emptyMap(), "");
+    assertEquals(0, sink1.buffer.size());
     Builder.build(sink1.sink(), Collections.<String, Object>emptyMap(), "  ");
     assertEquals(0, sink1.buffer.size());
     Builder.build(sink1.sink(), Collections.emptyList());
     assertEquals(0, sink1.buffer.size());
     Builder.build(sink1.sink(), Collections.emptyList(), false);
+    assertEquals(0, sink1.buffer.size());
+    Builder.build(sink1.sink(), Collections.emptyList(), "");
     assertEquals(0, sink1.buffer.size());
     Builder.build(sink1.sink(), Collections.emptyList(), "  ");
     assertEquals(0, sink1.buffer.size());
@@ -119,13 +123,23 @@ public class TestBuilder {
     assertEquals(0, sink1.buffer.size());
     Builder.build(sink1.sink(), Collections.emptyList().iterator(), false);
     assertEquals(0, sink1.buffer.size());
+    Builder.build(sink1.sink(), Collections.emptyList().iterator(), "");
+    assertEquals(0, sink1.buffer.size());
     Builder.build(sink1.sink(), Collections.emptyList().iterator(), "  ");
     assertEquals(0, sink1.buffer.size());
     Builder.build(sink1.sink(), Collections.enumeration(Collections.emptyList()));
     assertEquals(0, sink1.buffer.size());
     Builder.build(sink1.sink(), Collections.enumeration(Collections.emptyList()), false);
     assertEquals(0, sink1.buffer.size());
+    Builder.build(sink1.sink(), Collections.enumeration(Collections.emptyList()), "");
+    assertEquals(0, sink1.buffer.size());
     Builder.build(sink1.sink(), Collections.enumeration(Collections.emptyList()), "  ");
+    assertEquals(0, sink1.buffer.size());
+    Builder.build(sink1.sink(), (Iterable<?>)null);
+    assertEquals(0, sink1.buffer.size());
+    Builder.build(sink1.sink(), (Iterator<?>)null);
+    assertEquals(0, sink1.buffer.size());
+    Builder.build(sink1.sink(), (Enumeration<?>)null);
     assertEquals(0, sink1.buffer.size());
     final ThrowingSink sink2 = new ThrowingSink(true, true);
     Builder.build(sink2.sink(), Collections.<String, Object>emptyMap());
@@ -176,6 +190,24 @@ public class TestBuilder {
     assertNull(Builder.build((Iterable<?>)null, false));
     assertNull(Builder.build((Iterable<?>)null, true));
     assertNull(Builder.build((Iterable<?>)null, "  "));
+  }
+
+  @Test
+  public void testBuildNullIterator() {
+    final String built = Builder.build((Iterator<?>)null);
+    assertNull(built);
+    assertNull(Builder.build((Iterator<?>)null, false));
+    assertNull(Builder.build((Iterator<?>)null, true));
+    assertNull(Builder.build((Iterator<?>)null, "  "));
+  }
+
+  @Test
+  public void testBuildNullEnumeration() {
+    final String built = Builder.build((Enumeration<?>)null);
+    assertNull(built);
+    assertNull(Builder.build((Enumeration<?>)null, false));
+    assertNull(Builder.build((Enumeration<?>)null, true));
+    assertNull(Builder.build((Enumeration<?>)null, "  "));
   }
 
   @Test
