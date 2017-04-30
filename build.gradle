@@ -9,7 +9,7 @@ buildscript {
 }
 
 group 'info.jdavid.ok.json'
-version '3.7.0.0'
+version '3.7.0.1'
 
 apply plugin: 'java'
 apply plugin: 'jacoco'
@@ -42,6 +42,12 @@ jacocoTestReport {
     xml.enabled false
     csv.enabled false
     html.enabled true
+  }
+}
+
+jar {
+  manifest {
+    attributes Sealed: true
   }
 }
 
