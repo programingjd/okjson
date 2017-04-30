@@ -3,6 +3,7 @@ buildscript {
     jcenter()
   }
   dependencies {
+    classpath 'net.saliman:gradle-cobertura-plugin:2.4.0'
     classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.7.3'
     classpath 'org.jsoup:jsoup:1.10.2'
   }
@@ -12,7 +13,8 @@ group 'info.jdavid.ok.json'
 version '3.7.0.0'
 
 apply plugin: 'java'
-apply plugin: 'jacoco'
+//apply plugin: 'jacoco'
+apply plugin: 'cobertura'
 apply plugin: 'maven-publish'
 apply plugin: 'com.jfrog.bintray'
 
@@ -30,27 +32,35 @@ dependencies {
   compile 'com.squareup.okio:okio:1.12.0'
   compile 'com.squareup.moshi:moshi:1.4.0'
   testCompile 'junit:junit:4.12'
+  testRuntime 'org.slf4j:slf4j-api:1.7.25'
 }
 
 
-jacoco {
-  reportsDir = file("$buildDir/jacoco/reports")
-}
+//jacoco {
+//  reportsDir = file("$buildDir/jacoco/reports")
+//}
 
-jacocoTestReport {
-  reports {
-    xml.enabled true
-    csv.enabled false
-    html.enabled true
-  }
+//jacocoTestReport {
+//  reports {
+//    xml.enabled true
+//    csv.enabled false
+//    html.enabled true
+//  }
+//}
+
+cobertura {
+  coverageFormats = [ 'html', 'xml' ]
+  coverageEncoding = 'UTF-8'
+  coverageIgnoreTrivial = true
+  coverageReportDir = file("$buildDir/reports/coverage")
 }
 
 test {
-  jacoco {
-    append = false
-    destinationFile = file("$buildDir/jacoco/jacocoTest.exec")
-    classDumpFile = file("$buildDir/jacoco/classpathdumps")
-  }
+//  jacoco {
+//    append = false
+//    destinationFile = file("$buildDir/jacoco/jacocoTest.exec")
+//    classDumpFile = file("$buildDir/jacoco/classpathdumps")
+//  }
   doLast {
     File html = reports.html.entryPoint
     def doc = org.jsoup.Jsoup.parse(html, 'UTF-8')
@@ -78,7 +88,8 @@ test {
       }
     }.join('\n').with { readme.text = it }
   }
-  finalizedBy tasks.jacocoTestReport
+//  finalizedBy tasks.jacocoTestReport
+  finalizedBy tasks.cobertura
 }
 
 task javadocJar(type: Jar, dependsOn: javadoc) {

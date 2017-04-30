@@ -5,7 +5,7 @@ import android.util.Log;
 enum Logger {
   INSTANCE;
 
-  private final LogHandler logger;
+  final LogHandler logger;
 
   Logger() {
     boolean android;
