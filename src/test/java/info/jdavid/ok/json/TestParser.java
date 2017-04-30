@@ -167,6 +167,43 @@ public class TestParser {
     assertNull(parsed);
   }
 
+  @Test
+  public void testNestedArray() {
+    final String str = "[ [], [ \"a\", \"b\" ] ]";
+    final Object parsed = Parser.parse(str);
+    assertTrue(parsed instanceof List);
+    final List array = (List)parsed;
+    assertEquals(2, array.size());
+    final Object first = array.get(0);
+    assertTrue(first instanceof List);
+    final List empty = (List)first;
+    assertEquals(0, empty.size());
+    final Object second = array.get(1);
+    assertTrue(second instanceof List);
+    final List ab = (List)second;
+    assertEquals(2, ab.size());
+    assertEquals("a", ab.get(0));
+    assertEquals("b", ab.get(1));
+  }
+
+  @Test
+  public void testArray() {
+    final Object parsed = Parser.parse("[ \"a\", 3, 2.5, true, null, {}, [] ]");
+    assertTrue(parsed instanceof List);
+    final List array = (List)parsed;
+    assertEquals(7, array.size());
+    assertEquals("a", array.get(0));
+    assertEquals(3, array.get(1));
+    assertEquals(2.5, array.get(2));
+    assertEquals(true, array.get(3));
+    assertNull(array.get(4));
+    assertTrue(array.get(5) instanceof Map);
+    assertEquals(0, ((Map)array.get(5)).size());
+    assertTrue(array.get(6) instanceof List);
+    assertEquals(0, ((List)array.get(6)).size());
+  }
+
+
   @SuppressWarnings("unchecked")
   @Test
   public void testParseJsonObject0() {
