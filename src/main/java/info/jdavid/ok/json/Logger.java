@@ -2,6 +2,7 @@ package info.jdavid.ok.json;
 
 import android.util.Log;
 
+
 enum Logger {
   INSTANCE;
 

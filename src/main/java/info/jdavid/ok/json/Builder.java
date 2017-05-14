@@ -12,6 +12,7 @@ import com.squareup.moshi.JsonWriter;
 import okio.Buffer;
 import okio.BufferedSink;
 
+
 @SuppressWarnings({ "WeakerAccess", "unused", "SameParameterValue" })
 public class Builder {
 
