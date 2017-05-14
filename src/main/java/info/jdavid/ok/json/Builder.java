@@ -6,6 +6,8 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.regex.Pattern;
 
+import javax.annotation.Nullable;
+
 import com.squareup.moshi.JsonWriter;
 import okio.Buffer;
 import okio.BufferedSink;
@@ -21,7 +23,7 @@ public class Builder {
    * @param map the map to inspect.
    * @return true if the map is a valid representation of a json object, false if it isn't.
    */
-  public static boolean isValidObject(final Map<? extends CharSequence, ?> map) {
+  public static boolean isValidObject(@Nullable final Map<? extends CharSequence, ?> map) {
     try {
       return map != null && walk(map);
     }
@@ -35,7 +37,7 @@ public class Builder {
    * @param map the json object.
    * @return either a string or null if the map doesn't represent a valid json object.
    */
-  public static String build(final Map<? extends CharSequence, ?> map) {
+  public static @Nullable String build(@Nullable final Map<? extends CharSequence, ?> map) {
     final Buffer buffer = new Buffer();
     buildWithIndent(buffer, map, null);
     if (buffer.size() == 0) return null;
@@ -53,7 +55,8 @@ public class Builder {
    * @param indent whether to indent (2 spaces) the result or not.
    * @return either a string or null if the map doesn't represent a valid json object.
    */
-  public static String build(final Map<? extends CharSequence, ?> map, final boolean indent) {
+  public static @Nullable String build(@Nullable final Map<? extends CharSequence, ?> map,
+                                       final boolean indent) {
     final Buffer buffer = new Buffer();
     buildWithIndent(buffer, map, indent ? DEFAULT_INDENTATION : null);
     if (buffer.size() == 0) return null;
@@ -71,7 +74,8 @@ public class Builder {
    * @param indent the indentation string (tabs or spaces), which can be null.
    * @return either a string or null if the map doesn't represent a valid json object.
    */
-  public static String build(final Map<? extends CharSequence, ?> map, final String indent) {
+  public static @Nullable String build(@Nullable final Map<? extends CharSequence, ?> map,
+                                       @Nullable final String indent) {
     final Buffer buffer = new Buffer();
     build(buffer, map, indent);
     if (buffer.size() == 0) return null;
@@ -88,7 +92,8 @@ public class Builder {
    * @param sink the target buffer.
    * @param map the map representation of the json object.
    */
-  public static void build(final BufferedSink sink, final Map<? extends CharSequence, ?> map) {
+  public static void build(@Nullable final BufferedSink sink,
+                           @Nullable final Map<? extends CharSequence, ?> map) {
     buildWithIndent(sink, map, null);
   }
 
@@ -98,7 +103,8 @@ public class Builder {
    * @param map the map representation of the json object.
    * @param indent whether to indent (2 spaces) the result or not.
    */
-  public static void build(final BufferedSink sink, final Map<? extends CharSequence, ?> map,
+  public static void build(@Nullable final BufferedSink sink,
+                           @Nullable final Map<? extends CharSequence, ?> map,
                            final boolean indent) {
     buildWithIndent(sink, map, indent ? DEFAULT_INDENTATION : null);
   }
@@ -109,24 +115,21 @@ public class Builder {
    * @param map the map representation of the json object.
    * @param indent the indentation string (tabs or spaces), which can be null.
    */
-  public static void build(final BufferedSink sink, final Map<? extends CharSequence, ?> map,
-                           final String indent) {
-    if (!INDENTATION_PATTERN.matcher(indent).matches()) {
+  public static void build(@Nullable final BufferedSink sink,
+                           @Nullable final Map<? extends CharSequence, ?> map,
+                           @Nullable final String indent) {
+    if (indent != null && !INDENTATION_PATTERN.matcher(indent).matches()) {
       throw new IllegalArgumentException("Invalid indentation string.");
     }
-    buildWithIndent(sink, map, indent.length() == 0 ? null : indent);
+    buildWithIndent(sink, map, indent == null || indent.length() == 0 ? null : indent);
   }
 
-  private static void buildWithIndent(final BufferedSink sink, final Map<? extends CharSequence, ?> map,
-                                      final String indent) {
+  private static void buildWithIndent(@Nullable final BufferedSink sink,
+                                      @Nullable final Map<? extends CharSequence, ?> map,
+                                      @Nullable final String indent) {
     if (map == null) return;
-    final JsonWriter writer;
-    try {
-      writer = JsonWriter.of(sink);
-    }
-    catch (final NullPointerException e) {
-      return;
-    }
+    if (sink == null) return;
+    final JsonWriter writer = JsonWriter.of(sink);
     if (indent != null) writer.setIndent(indent);
     try {
       writer.beginObject();
@@ -149,7 +152,7 @@ public class Builder {
    * @param list the list (iterable) to inspect.
    * @return true if the iterable is a valid representation of a json array, false if it isn't.
    */
-  public static boolean isValidArray(final Iterable<?> list) {
+  public static boolean isValidArray(@Nullable final Iterable<?> list) {
     try {
       return list != null && walk(list);
     }
@@ -163,7 +166,7 @@ public class Builder {
    * @param iterator the iterator to inspect.
    * @return true if the iterator is a valid representation of a json array, false if it isn't.
    */
-  public static boolean isValidArray(final Iterator<?> iterator) {
+  public static boolean isValidArray(@Nullable final Iterator<?> iterator) {
     try {
       return iterator != null && walk(iterator);
     }
@@ -177,7 +180,7 @@ public class Builder {
    * @param enumeration the enumeration to inspect.
    * @return true if the enumeration is a valid representation of a json array, false if it isn't.
    */
-  public static boolean isValidArray(final Enumeration<?> enumeration) {
+  public static boolean isValidArray(@Nullable final Enumeration<?> enumeration) {
     try {
       return enumeration != null && walk(enumeration);
     }
@@ -191,7 +194,7 @@ public class Builder {
    * @param list the json array.
    * @return either a string or null if the iterable doesn't represent a valid json array.
    */
-  public static String build(final Iterable<?> list) {
+  public static @Nullable String build(@Nullable final Iterable<?> list) {
     final Buffer buffer = new Buffer();
     buildWithIndent(buffer, list, null);
     if (buffer.size() == 0) return null;
@@ -208,7 +211,7 @@ public class Builder {
    * @param iterator the json array.
    * @return either a string or null if the iterator doesn't represent a valid json array.
    */
-  public static String build(final Iterator<?> iterator) {
+  public static @Nullable String build(@Nullable final Iterator<?> iterator) {
     final Buffer buffer = new Buffer();
     buildWithIndent(buffer, iterator, null);
     if (buffer.size() == 0) return null;
@@ -225,7 +228,7 @@ public class Builder {
    * @param enumeration the json array.
    * @return either a string or null if the enumeration doesn't represent a valid json array.
    */
-  public static String build(final Enumeration<?> enumeration) {
+  public static @Nullable String build(@Nullable final Enumeration<?> enumeration) {
     final Buffer buffer = new Buffer();
     buildWithIndent(buffer, enumeration, null);
     if (buffer.size() == 0) return null;
@@ -243,7 +246,7 @@ public class Builder {
    * @param indent whether to indent (2 spaces) the result or not.
    * @return either a string or null if the iterable doesn't represent a valid json array.
    */
-  public static String build(final Iterable<?> list, final boolean indent) {
+  public static @Nullable String build(@Nullable final Iterable<?> list, final boolean indent) {
     final Buffer buffer = new Buffer();
     buildWithIndent(buffer, list, indent ? DEFAULT_INDENTATION : null);
     if (buffer.size() == 0) return null;
@@ -261,7 +264,7 @@ public class Builder {
    * @param indent whether to indent (2 spaces) the result or not.
    * @return either a string or null if the iterator doesn't represent a valid json array.
    */
-  public static String build(final Iterator<?> iterator, final boolean indent) {
+  public static @Nullable String build(@Nullable final Iterator<?> iterator, final boolean indent) {
     final Buffer buffer = new Buffer();
     buildWithIndent(buffer, iterator, indent ? DEFAULT_INDENTATION : null);
     if (buffer.size() == 0) return null;
@@ -279,7 +282,7 @@ public class Builder {
    * @param indent whether to indent (2 spaces) the result or not.
    * @return either a string or null if the enumeration doesn't represent a valid json array.
    */
-  public static String build(final Enumeration<?> enumeration, final boolean indent) {
+  public static @Nullable String build(@Nullable final Enumeration<?> enumeration, final boolean indent) {
     final Buffer buffer = new Buffer();
     buildWithIndent(buffer, enumeration, indent ? DEFAULT_INDENTATION : null);
     if (buffer.size() == 0) return null;
@@ -297,7 +300,8 @@ public class Builder {
    * @param indent the indentation string (tabs or spaces), which can be null.
    * @return either a string or null if the iterable doesn't represent a valid json array.
    */
-  public static String build(final Iterable<?> list, final String indent) {
+  public static @Nullable String build(@Nullable final Iterable<?> list,
+                                       @Nullable final String indent) {
     final Buffer buffer = new Buffer();
     build(buffer, list, indent);
     if (buffer.size() == 0) return null;
@@ -315,7 +319,8 @@ public class Builder {
    * @param indent the indentation string (tabs or spaces), which can be null.
    * @return either a string or null if the iterator doesn't represent a valid json array.
    */
-  public static String build(final Iterator<?> iterator, final String indent) {
+  public static @Nullable String build(@Nullable final Iterator<?> iterator,
+                                       @Nullable final String indent) {
     final Buffer buffer = new Buffer();
     build(buffer, iterator, indent);
     if (buffer.size() == 0) return null;
@@ -333,7 +338,8 @@ public class Builder {
    * @param indent the indentation string (tabs or spaces), which can be null.
    * @return either a string or null if the enumeration doesn't represent a valid json array.
    */
-  public static String build(final Enumeration<?> enumeration, final String indent) {
+  public static @Nullable String build(@Nullable final Enumeration<?> enumeration,
+                                       @Nullable final String indent) {
     final Buffer buffer = new Buffer();
     build(buffer, enumeration, indent);
     if (buffer.size() == 0) return null;
@@ -351,7 +357,8 @@ public class Builder {
    * @param sink the target buffer.
    * @param list the list (iterable) representation of the json array.
    */
-  public static void build(final BufferedSink sink, final Iterable<?> list) {
+  public static void build(@Nullable final BufferedSink sink,
+                           @Nullable final Iterable<?> list) {
     buildWithIndent(sink, list, null);
   }
 
@@ -361,7 +368,8 @@ public class Builder {
    * @param sink the target buffer.
    * @param iterator the list (iterator) representation of the json array.
    */
-  public static void build(final BufferedSink sink, final Iterator<?> iterator) {
+  public static void build(@Nullable final BufferedSink sink,
+                           @Nullable final Iterator<?> iterator) {
     buildWithIndent(sink, iterator, null);
   }
 
@@ -371,7 +379,8 @@ public class Builder {
    * @param sink the target buffer.
    * @param enumeration the list (enumeration) representation of the json array.
    */
-  public static void build(final BufferedSink sink, final Enumeration<?> enumeration) {
+  public static void build(@Nullable final BufferedSink sink,
+                           @Nullable final Enumeration<?> enumeration) {
     buildWithIndent(sink, enumeration, null);
   }
 
@@ -382,7 +391,9 @@ public class Builder {
    * @param list the list (iterable) representation of the json array.
    * @param indent whether to indent (2 spaces) the result or not.
    */
-  public static void build(final BufferedSink sink, final Iterable<?> list, final boolean indent) {
+  public static void build(@Nullable final BufferedSink sink,
+                           @Nullable final Iterable<?> list,
+                           final boolean indent) {
     buildWithIndent(sink, list, indent ? DEFAULT_INDENTATION : null);
   }
 
@@ -393,7 +404,9 @@ public class Builder {
    * @param iterator the list (iterator) representation of the json array.
    * @param indent whether to indent (2 spaces) the result or not.
    */
-  public static void build(final BufferedSink sink, final Iterator<?> iterator, final boolean indent) {
+  public static void build(@Nullable final BufferedSink sink,
+                           @Nullable final Iterator<?> iterator,
+                           final boolean indent) {
     buildWithIndent(sink, iterator, indent ? DEFAULT_INDENTATION : null);
   }
 
@@ -404,7 +417,9 @@ public class Builder {
    * @param enumeration the list (enumeration) representation of the json array.
    * @param indent whether to indent (2 spaces) the result or not.
    */
-  public static void build(final BufferedSink sink, final Enumeration<?> enumeration, final boolean indent) {
+  public static void build(@Nullable final BufferedSink sink,
+                           @Nullable final Enumeration<?> enumeration,
+                           final boolean indent) {
     buildWithIndent(sink, enumeration, indent ? DEFAULT_INDENTATION : null);
   }
 
@@ -415,11 +430,13 @@ public class Builder {
    * @param list the list (iterable) representation of the json array.
    * @param indent the indentation string (tabs or spaces), which can be null.
    */
-  public static void build(final BufferedSink sink, final Iterable<?> list, final String indent) {
-    if (!INDENTATION_PATTERN.matcher(indent).matches()) {
+  public static void build(@Nullable final BufferedSink sink,
+                           @Nullable final Iterable<?> list,
+                           @Nullable final String indent) {
+    if (indent != null && !INDENTATION_PATTERN.matcher(indent).matches()) {
       throw new IllegalArgumentException("Invalid indentation string.");
     }
-    buildWithIndent(sink, list, indent.length() == 0 ? null : indent);
+    buildWithIndent(sink, list, indent == null || indent.length() == 0 ? null : indent);
   }
 
   /**
@@ -429,11 +446,13 @@ public class Builder {
    * @param iterator the list (iterator) representation of the json array.
    * @param indent the indentation string (tabs or spaces), which can be null.
    */
-  public static void build(final BufferedSink sink, final Iterator<?> iterator, final String indent) {
-    if (!INDENTATION_PATTERN.matcher(indent).matches()) {
+  public static void build(@Nullable final BufferedSink sink,
+                           @Nullable final Iterator<?> iterator,
+                           @Nullable final String indent) {
+    if (indent != null && !INDENTATION_PATTERN.matcher(indent).matches()) {
       throw new IllegalArgumentException("Invalid indentation string.");
     }
-    buildWithIndent(sink, iterator, indent.length() == 0 ? null : indent);
+    buildWithIndent(sink, iterator, indent == null || indent.length() == 0 ? null : indent);
   }
 
   /**
@@ -443,23 +462,22 @@ public class Builder {
    * @param enumeration the list (enumeration) representation of the json array.
    * @param indent the indentation string (tabs or spaces), which can be null.
    */
-  public static void build(final BufferedSink sink, final Enumeration<?> enumeration, final String indent) {
-    if (!INDENTATION_PATTERN.matcher(indent).matches()) {
+  public static void build(@Nullable final BufferedSink sink,
+                           @Nullable final Enumeration<?> enumeration,
+                           @Nullable final String indent) {
+    if (indent != null && !INDENTATION_PATTERN.matcher(indent).matches()) {
       throw new IllegalArgumentException("Invalid indentation string.");
     }
-    buildWithIndent(sink, enumeration, indent.length() == 0 ? null : indent);
+    buildWithIndent(sink, enumeration, indent == null || indent.length() == 0 ? null : indent);
   }
 
   @SuppressWarnings("Duplicates")
-  private static void buildWithIndent(final BufferedSink sink, final Iterable<?> list, final String indent) {
+  private static void buildWithIndent(@Nullable final BufferedSink sink,
+                                      @Nullable final Iterable<?> list,
+                                      @Nullable final String indent) {
     if (list == null) return;
-    final JsonWriter writer;
-    try {
-      writer = JsonWriter.of(sink);
-    }
-    catch (final NullPointerException e) {
-      return;
-    }
+    if (sink == null) return;
+    final JsonWriter writer = JsonWriter.of(sink);
     if (indent != null) writer.setIndent(indent);
     try {
       writer.beginArray();
@@ -478,16 +496,12 @@ public class Builder {
   }
 
   @SuppressWarnings("Duplicates")
-  private static void buildWithIndent(final BufferedSink sink, final Iterator<?> iterator,
-                                      final String indent) {
+  private static void buildWithIndent(@Nullable final BufferedSink sink,
+                                      @Nullable final Iterator<?> iterator,
+                                      @Nullable final String indent) {
     if (iterator == null) return;
-    final JsonWriter writer;
-    try {
-      writer = JsonWriter.of(sink);
-    }
-    catch (final NullPointerException e) {
-      return;
-    }
+    if (sink == null) return;
+    final JsonWriter writer = JsonWriter.of(sink);
     if (indent != null) writer.setIndent(indent);
     try {
       writer.beginArray();
@@ -506,16 +520,12 @@ public class Builder {
   }
 
   @SuppressWarnings("Duplicates")
-  private static void buildWithIndent(final BufferedSink sink, final Enumeration<?> enumeration,
-                                      final String indent) {
+  private static void buildWithIndent(@Nullable final BufferedSink sink,
+                                      @Nullable final Enumeration<?> enumeration,
+                                      @Nullable final String indent) {
     if (enumeration == null) return;
-    final JsonWriter writer;
-    try {
-      writer = JsonWriter.of(sink);
-    }
-    catch (final NullPointerException e) {
-      return;
-    }
+    if (sink == null) return;
+    final JsonWriter writer = JsonWriter.of(sink);
     if (indent != null) writer.setIndent(indent);
     try {
       writer.beginArray();
@@ -611,7 +621,7 @@ public class Builder {
     }
   }
 
-  private static void value(final JsonWriter writer, final Object value) {
+  private static void value(final JsonWriter writer, @Nullable final Object value) {
     try {
       if (value == null) {
         writer.nullValue();
@@ -708,7 +718,7 @@ public class Builder {
     return true;
   }
 
-  private static boolean value(final Object value) {
+  private static boolean value(@Nullable final Object value) {
     if (value == null ||
         value instanceof String ||
         value instanceof Number ||
