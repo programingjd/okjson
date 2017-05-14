@@ -54,6 +54,9 @@ jar {
 }
 
 test {
+  jvmArgs '-XX:+IgnoreUnrecognizedVMOptions'
+  jvmArgs '--permit-illegal-access'
+  jvmArgs '--show-version'
   jacoco {
     append = false
     destinationFile = file("$buildDir/jacoco/jacocoTest.exec")
