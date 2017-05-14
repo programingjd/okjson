@@ -9,7 +9,7 @@ buildscript {
 }
 
 group 'info.jdavid.ok.json'
-version '3.7.0.1'
+version '3.8.0.0'
 
 apply plugin: 'java'
 apply plugin: 'jacoco'
@@ -19,6 +19,8 @@ apply plugin: 'com.jfrog.bintray'
 // Keep at 1.6 for Android
 sourceCompatibility = 1.6
 targetCompatibility = 1.6
+
+println "Java version: ${System.getProperty('java.version')}"
 
 repositories {
   jcenter()
