@@ -159,5 +159,7 @@ tasks.bintrayUpload.dependsOn tasks.check
 
 def getBintrayApiKey() {
   def f = new File("$projectDir/local.properties")
-  f.text.splitEachLine('=', { if (it && it[0] == 'bintrayApiKey') return it[1] })
+  def key = f.text.splitEachLine('=', { if (it && it[0] == 'bintrayApiKey') return it[1] })
+  //println "Bintray key: ${key}"
+  return key
 }
