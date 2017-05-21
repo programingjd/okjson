@@ -69,11 +69,17 @@ test {
     int failed = doc.select('#failures > .counter').text() as int
     html = jacocoTestReport.reports.html.entryPoint
     doc = org.jsoup.Jsoup.parse(html, 'UTF-8')
-    def imgs = doc.select('table.coverage>tbody>tr>.bar>img')
-    int missed = (imgs[0].attr('title').replaceAll(',','') as int) +
-                 (imgs[2].attr('title').replaceAll(',','') as int)
-    int all = (imgs[1].attr('title').replaceAll(',','') as int) +
-              (imgs[3].attr('title').replaceAll(',','') as int) + missed
+    def bars = doc.select('table.coverage>tbody>tr>.bar')
+    def firstBarImgs = bars.first().select('>img')
+    def lastBarImgs = bars.last().select('>img')
+    int missed =
+      (firstBarImgs.size() == 1 ? 0 : firstBarImgs.first().attr('title').replaceAll(',','') as int) +
+      (lastBarImgs.size() == 1 ? 0 : lastBarImgs.first().attr('title').replaceAll(',','') as int)
+    int all =
+      (firstBarImgs.last().attr('title').replaceAll(',','') as int) +
+      (lastBarImgs.last().attr('title').replaceAll(',','') as int) + missed
+    println missed
+    println all
     int coverage = (100 * (all - missed) / all) as int
     def readme = file('README.md')
     def badge = { String label, String text, String color ->
