@@ -6,11 +6,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.annotation.Nullable;
+
 import com.squareup.moshi.JsonDataException;
 import com.squareup.moshi.JsonReader;
 
 import okio.Buffer;
 import okio.BufferedSource;
+
 
 @SuppressWarnings("WeakerAccess")
 public final class Parser {
@@ -23,7 +26,8 @@ public final class Parser {
    * @return either a map representing a json object, or a list representing a json array,
    * or even null if the string is not valid json.
    */
-  public static <T> T parse(final String s) {
+  public static @Nullable <T> T parse(@Nullable final String s) {
+    if (s == null) return null;
     final Buffer buffer = new Buffer();
     try {
       return parse(buffer.writeUtf8(s));
@@ -40,14 +44,9 @@ public final class Parser {
    * @param <T> List&lt;?&gt; or Map&lt;String, ?&gt;.
    * @return the object representation of the json string, or null if the source is not valid json.
    */
-  public static <T> T parse(final BufferedSource source) {
-    final JsonReader reader;
-    try {
-      reader = JsonReader.of(source);
-    }
-    catch (final NullPointerException e) {
-      return null;
-    }
+  public static @Nullable <T> T parse(@Nullable final BufferedSource source) {
+    if (source == null) return null;
+    final JsonReader reader = JsonReader.of(source);
     try {
       final JsonReader.Token token = nextToken(reader);
       if (token == null) return null;
@@ -95,8 +94,7 @@ public final class Parser {
 
   private Parser() {}
 
-  private static JsonReader.Token nextToken(final JsonReader reader) {
-    if (reader == null) return null;
+  private static @Nullable JsonReader.Token nextToken(final JsonReader reader) {
     try {
       return reader.peek();
     }
@@ -345,14 +343,12 @@ public final class Parser {
           }
           catch (final IOException e) {
             Logger.log(e);
-            //noinspection unchecked
-            ((List)list).add(null);
+            list.add(null);
             break;
           }
           catch (final JsonDataException e) {
             Logger.log(e);
-            //noinspection unchecked
-            ((List)list).add(null);
+            list.add(null);
             break;
           }
           //noinspection unchecked
@@ -365,14 +361,12 @@ public final class Parser {
           }
           catch (final IOException e) {
             Logger.log(e);
-            //noinspection unchecked
-            ((List)list).add(null);
+            list.add(null);
             break;
           }
           catch (final JsonDataException e) {
             Logger.log(e);
-            //noinspection unchecked
-            ((List)list).add(null);
+            list.add(null);
             break;
           }
           //noinspection unchecked
@@ -389,8 +383,7 @@ public final class Parser {
           catch (final JsonDataException e) {
             Logger.log(e);
           }
-          //noinspection unchecked
-          ((List)list).add(null);
+          list.add(null);
           break;
         }
         case BOOLEAN: {
@@ -400,13 +393,11 @@ public final class Parser {
           }
           catch (final IOException e) {
             Logger.log(e);
-            //noinspection unchecked
-            ((List)list).add(null);
+            list.add(null);
           }
           catch (final JsonDataException e) {
             Logger.log(e);
-            //noinspection unchecked
-            ((List)list).add(null);
+            list.add(null);
           }
           break;
         }
@@ -417,13 +408,11 @@ public final class Parser {
           }
           catch (final IOException e) {
             Logger.log(e);
-            //noinspection unchecked
-            ((List)list).add(null);
+            list.add(null);
           }
           catch (final JsonDataException e) {
             Logger.log(e);
-            //noinspection unchecked
-            ((List)list).add(null);
+            list.add(null);
           }
           break;
         }
@@ -434,13 +423,11 @@ public final class Parser {
           }
           catch (final IOException e) {
             Logger.log(e);
-            //noinspection unchecked
-            ((List)list).add(null);
+            list.add(null);
           }
           catch (final JsonDataException e) {
             Logger.log(e);
-            //noinspection unchecked
-            ((List)list).add(null);
+            list.add(null);
           }
           break;
         }
