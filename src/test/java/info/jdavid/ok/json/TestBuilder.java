@@ -17,6 +17,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
 
+import javax.annotation.Nullable;
+
 import okio.Buffer;
 import okio.BufferedSink;
 import org.junit.BeforeClass;
@@ -50,13 +52,13 @@ public class TestBuilder {
   private static final class KeyValue {
     final String key;
     final Object value;
-    KeyValue(final String key, final Object value) {
+    KeyValue(final String key, final @Nullable Object value) {
       this.key = key;
       this.value = value;
     }
   }
 
-  private static KeyValue kv(final String key, final Object value) {
+  private static KeyValue kv(final String key, final @Nullable Object value) {
     return new KeyValue(key, value);
   }
 
