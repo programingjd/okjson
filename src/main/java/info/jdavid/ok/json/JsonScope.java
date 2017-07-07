@@ -1,4 +1,7 @@
+// Copied from
+// https://github.com/square/moshi/blob/master/moshi/src/main/java/com/squareup/moshi/JsonScope.java
 package info.jdavid.ok.json;
+
 
 /** Lexical scoping elements within a JSON reader or writer. */
 final class JsonScope {

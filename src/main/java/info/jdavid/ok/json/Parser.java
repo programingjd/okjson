@@ -1,6 +1,7 @@
 package info.jdavid.ok.json;
 
 import java.io.IOException;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -106,6 +107,11 @@ public final class Parser {
 
   }
 
+  private static final Long MAX_INT = (long)Integer.MAX_VALUE;
+  private static final Long MIN_INT = (long)Integer.MIN_VALUE;
+  private static final BigInteger MAX_LONG = BigInteger.valueOf(Long.MAX_VALUE);
+  private static final BigInteger MIN_LONG = BigInteger.valueOf(Long.MIN_VALUE);
+
   static Number stringToNumber(final String s) {
     if (s.indexOf('.') == -1) {
       // integer or long
@@ -113,37 +119,65 @@ public final class Parser {
       if (n < 10) {
         return Integer.valueOf(s);
       }
-      else if (n > 11) {
+      else if (n == 10) {
+        final boolean negative = s.indexOf('-') == 0;
+        if (negative) return Integer.valueOf(s);
+        final char first = s.charAt(0);
+        if (first == '1') return Integer.valueOf(s);
+        if (first > '2') return Long.valueOf(s);
+        final Long longValue = Long.valueOf(s);
+        if (longValue.compareTo(MAX_INT) > 0) {
+          return longValue;
+        }
+        else {
+          return longValue.intValue();
+        }
+      }
+      else if (n == 11) {
+        final boolean positive = s.indexOf('-') == -1;
+        if (positive) return Long.valueOf(s);
+        final char first = s.charAt(1);
+        if (first == '1') return Integer.valueOf(s);
+        if (first > '2') return Long.valueOf(s);
+        final Long longValue = Long.valueOf(s);
+        if (longValue.compareTo(MIN_INT) < 0) {
+          return longValue;
+        }
+        else {
+          return longValue.intValue();
+        }
+      }
+      else if (n < 20) {
         return Long.valueOf(s);
       }
-      else {
+      else if (n == 20) {
         final boolean negative = s.indexOf('-') == 0;
-        if (n == 10) {
-          if (negative) return Integer.valueOf(s);
-          final char first = s.charAt(0);
-          if (first == '1') return Integer.valueOf(s);
-          if (first > '2') return Long.valueOf(s);
-          final Long longValue = Long.valueOf(s);
-          if (longValue > Integer.MAX_VALUE) {
-            return longValue;
-          }
-          else {
-            return longValue.intValue();
-          }
+        if (negative) return Long.valueOf(s);
+        final char first = s.charAt(0);
+        if (first < '9') return Long.valueOf(s);
+        final BigInteger bigValue = new BigInteger(s);
+        if (bigValue.compareTo(MAX_LONG) > 0) {
+          return bigValue;
         }
-        else { // n == 11
-          if (!negative) return Long.valueOf(s);
-          final char first = s.charAt(1);
-          if (first == '1') return Integer.valueOf(s);
-          if (first > '2') return Long.valueOf(s);
-          final Long longValue = Long.valueOf(s);
-          if (longValue < Integer.MIN_VALUE) {
-            return longValue;
-          }
-          else {
-            return longValue.intValue();
-          }
+        else {
+          return bigValue.longValue();
         }
+      }
+      else if (n == 21) {
+        final boolean positive = s.indexOf('-') == -1;
+        if (positive) return new BigInteger(s);
+        final char first = s.charAt(1);
+        if (first < '9') return Long.valueOf(s);
+        final BigInteger bigValue = new BigInteger(s);
+        if (bigValue.compareTo(MIN_LONG) < 0) {
+          return bigValue;
+        }
+        else {
+          return bigValue.longValue();
+        }
+      }
+      else {
+        return new BigInteger(s);
       }
     }
     else {

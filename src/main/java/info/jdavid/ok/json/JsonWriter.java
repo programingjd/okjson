@@ -1,9 +1,10 @@
+// Heavily inspired by
+// https://github.com/square/moshi/blob/master/moshi/src/main/java/com/squareup/moshi/JsonUtf8Writer.java
 package info.jdavid.ok.json;
 
 import java.io.Closeable;
 import java.io.Flushable;
 import java.io.IOException;
-import javax.annotation.Nullable;
 import okio.BufferedSink;
 import okio.Sink;
 
@@ -16,6 +17,7 @@ import static info.jdavid.ok.json.JsonScope.NONEMPTY_DOCUMENT;
 import static info.jdavid.ok.json.JsonScope.NONEMPTY_OBJECT;
 
 
+@SuppressWarnings("UnusedReturnValue")
 class JsonWriter implements Closeable, Flushable {
   // The nesting stack. Using a manual array rather than an ArrayList saves 20%. This stack permits
   // up to 32 levels of nesting including the top-level document. Deeper nesting is prone to trigger
@@ -30,7 +32,6 @@ class JsonWriter implements Closeable, Flushable {
    * pretty printing.
    */
   private String indent;
-  private boolean promoteValueToName;
 
   /*
    * From RFC 7159, "All Unicode characters may be placed within the
@@ -78,17 +79,9 @@ class JsonWriter implements Closeable, Flushable {
    *
    * @param indent a string containing only whitespace.
    */
-  public void setIndent(final String indent) {
+  void setIndent(final String indent) {
     this.indent = !indent.isEmpty() ? indent : null;
     this.separator = !indent.isEmpty() ? ": " : ":";
-  }
-
-  /**
-   * Returns a string containing only whitespace, used for each level of
-   * indentation. If empty, the encoded document will be compact.
-   */
-  public final String getIndent() {
-    return indent != null ? indent : "";
   }
 
   /**
@@ -97,7 +90,7 @@ class JsonWriter implements Closeable, Flushable {
    *
    * @return this writer.
    */
-  public JsonWriter beginArray() throws IOException {
+  JsonWriter beginArray() throws IOException {
     writeDeferredName();
     return open(EMPTY_ARRAY, "[");
   }
@@ -107,7 +100,7 @@ class JsonWriter implements Closeable, Flushable {
    *
    * @return this writer.
    */
-  public JsonWriter endArray() throws IOException {
+  JsonWriter endArray() throws IOException {
     return close(EMPTY_ARRAY, NONEMPTY_ARRAY, "]");
   }
 
@@ -117,7 +110,7 @@ class JsonWriter implements Closeable, Flushable {
    *
    * @return this writer.
    */
-  public JsonWriter beginObject() throws IOException {
+  JsonWriter beginObject() throws IOException {
     writeDeferredName();
     return open(EMPTY_OBJECT, "{");
   }
@@ -127,8 +120,7 @@ class JsonWriter implements Closeable, Flushable {
    *
    * @return this writer.
    */
-  public JsonWriter endObject() throws IOException {
-    promoteValueToName = false;
+  JsonWriter endObject() throws IOException {
     return close(EMPTY_OBJECT, NONEMPTY_OBJECT, "}");
   }
 
@@ -168,13 +160,11 @@ class JsonWriter implements Closeable, Flushable {
    * @param name the name of the forthcoming value. Must not be null.
    * @return this writer.
    */
-  public JsonWriter name(@Nullable final String name) throws IOException {
-    if (name == null) throw new NullPointerException("name == null");
+  JsonWriter name(final String name) throws IOException {
     if (stackSize == 0) throw new IllegalStateException("JsonWriter is closed.");
     if (deferredName != null) throw new IllegalStateException("Nesting problem.");
     deferredName = name;
     pathNames[stackSize - 1] = name;
-    promoteValueToName = false;
     return this;
   }
 
@@ -192,9 +182,7 @@ class JsonWriter implements Closeable, Flushable {
    * @param value the literal string value, or null to encode a null literal.
    * @return this writer.
    */
-  public JsonWriter value(@Nullable final String value) throws IOException {
-    if (value == null) return nullValue();
-    if (promoteValueToName) return name(value);
+  JsonWriter value(final String value) throws IOException {
     writeDeferredName();
     beforeValue();
     string(sink, value);
@@ -207,7 +195,7 @@ class JsonWriter implements Closeable, Flushable {
    *
    * @return this writer.
    */
-  public JsonWriter nullValue() throws IOException {
+  JsonWriter nullValue() throws IOException {
     if (deferredName != null) {
       writeDeferredName();
     }
@@ -222,7 +210,7 @@ class JsonWriter implements Closeable, Flushable {
    *
    * @return this writer.
    */
-  public JsonWriter value(final boolean value) throws IOException {
+  private JsonWriter value(final boolean value) throws IOException {
     writeDeferredName();
     beforeValue();
     sink.writeUtf8(value ? "true" : "false");
@@ -235,8 +223,7 @@ class JsonWriter implements Closeable, Flushable {
    *
    * @return this writer.
    */
-  public JsonWriter value(@Nullable final Boolean value) throws IOException {
-    if (value == null) return nullValue();
+  JsonWriter value(final Boolean value) throws IOException {
     return value(value.booleanValue());
   }
 
@@ -247,45 +234,8 @@ class JsonWriter implements Closeable, Flushable {
    *     {@linkplain Double#isInfinite() infinities}.
    * @return this writer.
    */
-  public JsonWriter value(final double value) throws IOException {
-    if (promoteValueToName) {
-      return name(Double.toString(value));
-    }
-    writeDeferredName();
-    beforeValue();
-    sink.writeUtf8(Double.toString(value));
-    ++pathIndices[stackSize - 1];
-    return this;
-  }
-
-  /**
-   * Encodes {@code value}.
-   *
-   * @return this writer.
-   */
-  public JsonWriter value(final long value) throws IOException {
-    if (promoteValueToName) return name(Long.toString(value));
-    writeDeferredName();
-    beforeValue();
-    sink.writeUtf8(Long.toString(value));
-    ++pathIndices[stackSize - 1];
-    return this;
-  }
-
-  /**
-   * Encodes {@code value}.
-   *
-   * @param value a finite value. May not be {@linkplain Double#isNaN() NaNs} or
-   *     {@linkplain Double#isInfinite() infinities}.
-   * @return this writer.
-   */
-  public JsonWriter value(@Nullable final Number value) throws IOException {
-    if (value == null) return nullValue();
-
+  JsonWriter value(final Number value) throws IOException {
     final String string = value.toString();
-    if (promoteValueToName) {
-      return name(string);
-    }
     writeDeferredName();
     beforeValue();
     sink.writeUtf8(string);
@@ -410,12 +360,12 @@ class JsonWriter implements Closeable, Flushable {
   }
 
   /** Returns the scope on the top of the stack. */
-  final int peekScope() {
+  private int peekScope() {
     if (stackSize == 0) throw new IllegalStateException("JsonWriter is closed.");
     return scopes[stackSize - 1];
   }
 
-  final void pushScope(final int newTop) {
+  private void pushScope(final int newTop) {
     if (stackSize == scopes.length) {
       throw new JsonDataException("Nesting too deep at " + getPath() + ": circular reference?");
     }
@@ -423,28 +373,15 @@ class JsonWriter implements Closeable, Flushable {
   }
 
   /** Replace the value on the top of the stack with the given value. */
-  final void replaceTop(final int topOfStack) {
+  private void replaceTop(final int topOfStack) {
     scopes[stackSize - 1] = topOfStack;
-  }
-
-
-  /**
-   * Changes the writer to treat the next value as a string name. This is useful for map adapters so
-   * that arbitrary type adapters can use {@link #value} to write a name value.
-   */
-  final void promoteValueToName() throws IOException {
-    final int context = peekScope();
-    if (context != NONEMPTY_OBJECT && context != EMPTY_OBJECT) {
-      throw new IllegalStateException("Nesting problem.");
-    }
-    promoteValueToName = true;
   }
 
   /**
    * Returns a <a href="http://goessner.net/articles/JsonPath/">JsonPath</a> to
    * the current location in the JSON value.
    */
-  public final String getPath() {
+  private String getPath() {
     return JsonScope.getPath(stackSize, scopes, pathNames, pathIndices);
   }
 

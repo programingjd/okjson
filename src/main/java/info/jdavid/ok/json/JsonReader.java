@@ -1,13 +1,11 @@
+// Heavily inspired by
+// https://github.com/square/moshi/blob/master/moshi/src/main/java/com/squareup/moshi/JsonUtf8Reader.java
+
 package info.jdavid.ok.json;
 
 import java.io.Closeable;
 import java.io.EOFException;
 import java.io.IOException;
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
 import javax.annotation.Nullable;
 import okio.Buffer;
 import okio.BufferedSource;
@@ -99,7 +97,7 @@ class JsonReader implements Closeable {
    * Consumes the next token from the JSON stream and asserts that it is the beginning of a new
    * array.
    */
-  public void beginArray() throws IOException {
+  void beginArray() throws IOException {
     int p = peeked;
     if (p == PEEKED_NONE) p = doPeek();
     if (p == PEEKED_BEGIN_ARRAY) {
@@ -116,7 +114,7 @@ class JsonReader implements Closeable {
    * Consumes the next token from the JSON stream and asserts that it is the
    * end of the current array.
    */
-  public void endArray() throws IOException {
+  void endArray() throws IOException {
     int p = peeked;
     if (p == PEEKED_NONE) p = doPeek();
     if (p == PEEKED_END_ARRAY) {
@@ -133,7 +131,7 @@ class JsonReader implements Closeable {
    * Consumes the next token from the JSON stream and asserts that it is the beginning of a new
    * object.
    */
-  public void beginObject() throws IOException {
+  void beginObject() throws IOException {
     int p = peeked;
     if (p == PEEKED_NONE) p = doPeek();
     if (p == PEEKED_BEGIN_OBJECT) {
@@ -149,7 +147,7 @@ class JsonReader implements Closeable {
    * Consumes the next token from the JSON stream and asserts that it is the end of the current
    * object.
    */
-  public void endObject() throws IOException {
+  void endObject() throws IOException {
     int p = peeked;
     if (p == PEEKED_NONE) p = doPeek();
     if (p == PEEKED_END_OBJECT) {
@@ -164,18 +162,9 @@ class JsonReader implements Closeable {
   }
 
   /**
-   * Returns true if the current array or object has another element.
-   */
-  public boolean hasNext() throws IOException {
-    int p = peeked;
-    if (p == PEEKED_NONE) p = doPeek();
-    return p != PEEKED_END_OBJECT && p != PEEKED_END_ARRAY;
-  }
-
-  /**
    * Returns the type of the next token without consuming it.
    */
-  public Token peek() throws IOException {
+  Token peek() throws IOException {
     int p = peeked;
     if (p == PEEKED_NONE) p = doPeek();
     switch (p) {
@@ -263,7 +252,8 @@ class JsonReader implements Closeable {
           if (isLiteral((char)c)) return peeked = PEEKED_UNQUOTED_NAME;
           throw syntaxError("Expected name");
       }
-    } else if (peekStack == JsonScope.DANGLING_NAME) {
+    }
+    else if (peekStack == JsonScope.DANGLING_NAME) {
       scopes[stackSize - 1] = JsonScope.NONEMPTY_OBJECT;
       // Look for a colon before the value.
       final int c = nextNonWhitespace(true);
@@ -484,7 +474,7 @@ class JsonReader implements Closeable {
    *
    * @throws JsonDataException if the next token in the stream is not a property name.
    */
-  public String nextName() throws IOException {
+  String nextName() throws IOException {
     int p = peeked;
     if (p == PEEKED_NONE) p = doPeek();
     final String result;
@@ -509,62 +499,12 @@ class JsonReader implements Closeable {
   }
 
   /**
-   * If the next token is a {@linkplain Token#NAME property name} that's in {@code options}, this
-   * consumes it and returns its index. Otherwise this returns -1 and no name is consumed.
-   */
-  public int selectName(final Options options) throws IOException {
-    int p = peeked;
-    if (p == PEEKED_NONE) p = doPeek();
-    if (p < PEEKED_SINGLE_QUOTED_NAME || p > PEEKED_BUFFERED_NAME) return -1;
-    if (p == PEEKED_BUFFERED_NAME) return findName(peekedString, options);
-
-    int result = source.select(options.doubleQuoteSuffix);
-    if (result != -1) {
-      peeked = PEEKED_NONE;
-      pathNames[stackSize - 1] = options.strings[result];
-      return result;
-    }
-
-    // The next name may be unnecessary escaped. Save the last recorded path name, so that we
-    // can restore the peek state in case we fail to find a match.
-    final String lastPathName = pathNames[stackSize - 1];
-
-    final String nextName = nextName();
-    result = findName(nextName, options);
-
-    if (result == -1) {
-      peeked = PEEKED_BUFFERED_NAME;
-      peekedString = nextName;
-      // We can't push the path further, make it seem like nothing happened.
-      pathNames[stackSize - 1] = lastPathName;
-    }
-
-    return result;
-  }
-
-  /**
-   * If {@code name} is in {@code options} this consumes it and returns it's index.
-   * Otherwise this returns -1 and no name is consumed.
-   */
-  private int findName(final String name, final Options options) {
-    final int size = options.strings.length;
-    for (int i=0; i<size; ++i) {
-      if (name.equals(options.strings[i])) {
-        peeked = PEEKED_NONE;
-        pathNames[stackSize - 1] = name;
-        return i;
-      }
-    }
-    return -1;
-  }
-
-  /**
    * Returns the {@linkplain Token#STRING string} value of the next token, consuming it. If the next
    * token is a number, this method will return its string form.
    *
    * @throws JsonDataException if the next token is not a string or if this reader is closed.
    */
-  public String nextString() throws IOException {
+  String nextString() throws IOException {
     int p = peeked;
     if (p == PEEKED_NONE) p = doPeek();
     final String result;
@@ -596,56 +536,11 @@ class JsonReader implements Closeable {
   }
 
   /**
-   * If the next token is a {@linkplain Token#STRING string} that's in {@code options}, this
-   * consumes it and returns its index. Otherwise this returns -1 and no string is consumed.
-   */
-  public int selectString(final Options options) throws IOException {
-    int p = peeked;
-    if (p == PEEKED_NONE) p = doPeek();
-    if (p < PEEKED_SINGLE_QUOTED || p > PEEKED_BUFFERED) return -1;
-    if (p == PEEKED_BUFFERED) return findString(peekedString, options);
-
-    int result = source.select(options.doubleQuoteSuffix);
-    if (result != -1) {
-      peeked = PEEKED_NONE;
-      ++pathIndices[stackSize - 1];
-      return result;
-    }
-
-    final String nextString = nextString();
-    result = findString(nextString, options);
-
-    if (result == -1) {
-      peeked = PEEKED_BUFFERED;
-      peekedString = nextString;
-      --pathIndices[stackSize - 1];
-    }
-
-    return result;
-  }
-
-  /**
-   * If {@code string} is in {@code options} this consumes it and returns it's index.
-   * Otherwise this returns -1 and no string is consumed.
-   */
-  private int findString(final String string, final Options options) {
-    final int size = options.strings.length;
-    for (int i=0; i<size; ++i) {
-      if (string.equals(options.strings[i])) {
-        peeked = PEEKED_NONE;
-        ++pathIndices[stackSize - 1];
-        return i;
-      }
-    }
-    return -1;
-  }
-
-  /**
    * Returns the {@linkplain Token#BOOLEAN boolean} value of the next token, consuming it.
    *
    * @throws JsonDataException if the next token is not a boolean or if this reader is closed.
    */
-  public boolean nextBoolean() throws IOException {
+  boolean nextBoolean() throws IOException {
     int p = peeked;
     if (p == PEEKED_NONE) p = doPeek();
     if (p == PEEKED_TRUE) {
@@ -667,7 +562,7 @@ class JsonReader implements Closeable {
    *
    * @throws JsonDataException if the next token is not null or if this reader is closed.
    */
-  public @Nullable <T> T nextNull() throws IOException {
+  @Nullable <T> T nextNull() throws IOException {
     int p = peeked;
     if (p == PEEKED_NONE) p = doPeek();
     if (p == PEEKED_NULL) {
@@ -678,112 +573,6 @@ class JsonReader implements Closeable {
     else {
       throw new JsonDataException("Expected null but was " + peek() + " at path " + getPath());
     }
-  }
-
-  /**
-   * Returns the {@linkplain Token#NUMBER double} value of the next token, consuming it. If the next
-   * token is a string, this method will attempt to parse it as a double using {@link
-   * Double#parseDouble(String)}.
-   *
-   * @throws JsonDataException if the next token is not a literal value, or if the next literal
-   *     value cannot be parsed as a double, or is non-finite.
-   */
-  public double nextDouble() throws IOException {
-    int p = peeked;
-    if (p == PEEKED_NONE) p = doPeek();
-
-    if (p == PEEKED_LONG) {
-      peeked = PEEKED_NONE;
-      ++pathIndices[stackSize - 1];
-      return (double)peekedLong;
-    }
-
-    if (p == PEEKED_NUMBER) {
-      peekedString = buffer.readUtf8(peekedNumberLength);
-    }
-    else if (p == PEEKED_DOUBLE_QUOTED) {
-      peekedString = nextQuotedValue(DOUBLE_QUOTE_OR_SLASH);
-    }
-    else if (p == PEEKED_SINGLE_QUOTED) {
-      peekedString = nextQuotedValue(SINGLE_QUOTE_OR_SLASH);
-    }
-    else if (p == PEEKED_UNQUOTED) {
-      peekedString = nextUnquotedValue();
-    }
-    else if (p != PEEKED_BUFFERED) {
-      throw new JsonDataException("Expected a double but was " + peek() + " at path " + getPath());
-    }
-
-    peeked = PEEKED_BUFFERED;
-    final double result;
-    try {
-      result = Double.parseDouble(peekedString);
-    }
-    catch (final NumberFormatException e) {
-      throw new JsonDataException("Expected a double but was " + peekedString
-                                  + " at path " + getPath());
-    }
-    peekedString = null;
-    peeked = PEEKED_NONE;
-    ++pathIndices[stackSize - 1];
-    return result;
-  }
-
-  /**
-   * Returns the {@linkplain Token#NUMBER long} value of the next token, consuming it. If the next
-   * token is a string, this method will attempt to parse it as a long. If the next token's numeric
-   * value cannot be exactly represented by a Java {@code long}, this method throws.
-   *
-   * @throws JsonDataException if the next token is not a literal value, if the next literal value
-   *     cannot be parsed as a number, or exactly represented as a long.
-   */
-  public long nextLong() throws IOException {
-    int p = peeked;
-    if (p == PEEKED_NONE) p = doPeek();
-
-    if (p == PEEKED_LONG) {
-      peeked = PEEKED_NONE;
-      ++pathIndices[stackSize - 1];
-      return peekedLong;
-    }
-
-    if (p == PEEKED_NUMBER) {
-      peekedString = buffer.readUtf8(peekedNumberLength);
-    }
-    else if (p == PEEKED_DOUBLE_QUOTED || p == PEEKED_SINGLE_QUOTED) {
-      peekedString = p == PEEKED_DOUBLE_QUOTED ?
-                     nextQuotedValue(DOUBLE_QUOTE_OR_SLASH) :
-                     nextQuotedValue(SINGLE_QUOTE_OR_SLASH);
-      try {
-        final long result = Long.parseLong(peekedString);
-        peeked = PEEKED_NONE;
-        ++pathIndices[stackSize - 1];
-        return result;
-      }
-      catch (final NumberFormatException ignored) {
-        // Fall back to parse as a double below.
-      }
-    }
-    else if (p != PEEKED_BUFFERED) {
-      throw new JsonDataException("Expected a long but was " + peek() + " at path " + getPath());
-    }
-
-    peeked = PEEKED_BUFFERED;
-    final long result;
-    try {
-      final BigDecimal asDecimal = new BigDecimal(peekedString);
-      result = asDecimal.longValueExact();
-    }
-    catch (final NumberFormatException e) {
-      throw new JsonDataException("Expected a long but was " + peekedString + " at path " + getPath());
-    }
-    catch (final ArithmeticException e) {
-      throw new JsonDataException("Expected a long but was " + peekedString + " at path " + getPath());
-    }
-    peekedString = null;
-    peeked = PEEKED_NONE;
-    ++pathIndices[stackSize - 1];
-    return result;
   }
 
   /**
@@ -828,89 +617,6 @@ class JsonReader implements Closeable {
     return i != -1 ? buffer.readUtf8(i) : buffer.readUtf8();
   }
 
-  private void skipQuotedValue(final ByteString runTerminator) throws IOException {
-    while (true) {
-      final long index = source.indexOfElement(runTerminator);
-      if (index == -1L) throw syntaxError("Unterminated string");
-
-      if (buffer.getByte(index) == '\\') {
-        buffer.skip(index + 1);
-        readEscapeCharacter();
-      }
-      else {
-        buffer.skip(index + 1);
-        return;
-      }
-    }
-  }
-
-  private void skipUnquotedValue() throws IOException {
-    final long i = source.indexOfElement(UNQUOTED_STRING_TERMINALS);
-    buffer.skip(i != -1L ? i : buffer.size());
-  }
-
-  /**
-   * Returns the {@linkplain Token#NUMBER int} value of the next token, consuming it. If the next
-   * token is a string, this method will attempt to parse it as an int. If the next token's numeric
-   * value cannot be exactly represented by a Java {@code int}, this method throws.
-   *
-   * @throws JsonDataException if the next token is not a literal value, if the next literal value
-   *     cannot be parsed as a number, or exactly represented as an int.
-   */
-  public int nextInt() throws IOException {
-    int p = peeked;
-    if (p == PEEKED_NONE) p = doPeek();
-
-    int result;
-    if (p == PEEKED_LONG) {
-      result = (int) peekedLong;
-      if (peekedLong != result) { // Make sure no precision was lost casting to 'int'.
-        throw new JsonDataException("Expected an int but was " + peekedLong + " at path " + getPath());
-      }
-      peeked = PEEKED_NONE;
-      ++pathIndices[stackSize - 1];
-      return result;
-    }
-
-    if (p == PEEKED_NUMBER) {
-      peekedString = buffer.readUtf8(peekedNumberLength);
-    }
-    else if (p == PEEKED_DOUBLE_QUOTED || p == PEEKED_SINGLE_QUOTED) {
-      peekedString = p == PEEKED_DOUBLE_QUOTED ?
-                     nextQuotedValue(DOUBLE_QUOTE_OR_SLASH) :
-                     nextQuotedValue(SINGLE_QUOTE_OR_SLASH);
-      try {
-        result = Integer.parseInt(peekedString);
-        peeked = PEEKED_NONE;
-        ++pathIndices[stackSize - 1];
-        return result;
-      }
-      catch (final NumberFormatException ignored) {
-        // Fall back to parse as a double below.
-      }
-    }
-    else if (p != PEEKED_BUFFERED) {
-      throw new JsonDataException("Expected an int but was " + peek() + " at path " + getPath());
-    }
-
-    peeked = PEEKED_BUFFERED;
-    double asDouble;
-    try {
-      asDouble = Double.parseDouble(peekedString);
-    }
-    catch (final NumberFormatException e) {
-      throw new JsonDataException("Expected an int but was " + peekedString + " at path " + getPath());
-    }
-    result = (int)asDouble;
-    if (result != asDouble) { // Make sure no precision was lost casting to 'int'.
-      throw new JsonDataException("Expected an int but was " + peekedString + " at path " + getPath());
-    }
-    peekedString = null;
-    peeked = PEEKED_NONE;
-    ++pathIndices[stackSize - 1];
-    return result;
-  }
-
   @Override public void close() throws IOException {
     peeked = PEEKED_NONE;
     scopes[0] = JsonScope.CLOSED;
@@ -926,7 +632,7 @@ class JsonReader implements Closeable {
    *
    * <p>This throws a {@link JsonDataException}.
    */
-  public void skipValue() throws IOException {
+  void skipValue() throws IOException {
     throw new JsonDataException("Cannot skip unexpected " + peek() + " at " + getPath());
   }
 
@@ -1003,7 +709,8 @@ class JsonReader implements Closeable {
   /**
    * @param toFind a string to search for. Must not contain a newline.
    */
-  private boolean skipTo(String toFind) throws IOException {
+  @SuppressWarnings("SameParameterValue")
+  private boolean skipTo(final String toFind) throws IOException {
     outer:
     for (; source.request(toFind.length());) {
       for (int c=0; c<toFind.length(); ++c) {
@@ -1078,18 +785,7 @@ class JsonReader implements Closeable {
     }
   }
 
-  /**
-   * Changes the reader to treat the next name as a string value. This is useful for map adapters so
-   * that arbitrary type adapters can use {@link #nextString} to read a name value.
-   */
-  void promoteNameToValue() throws IOException {
-    if (hasNext()) {
-      peekedString = nextName();
-      peeked = PEEKED_BUFFERED;
-    }
-  }
-
-  final void pushScope(final int newTop) {
+  private void pushScope(final int newTop) {
     if (stackSize == scopes.length) {
       throw new JsonDataException("Nesting too deep at " + getPath());
     }
@@ -1100,102 +796,16 @@ class JsonReader implements Closeable {
    * Throws a new IO exception with the given message and a context snippet
    * with this reader's content.
    */
-  final JsonEncodingException syntaxError(final String message) throws JsonEncodingException {
+  private JsonEncodingException syntaxError(final String message) throws JsonEncodingException {
     throw new JsonEncodingException(message + " at path " + getPath());
-  }
-
-  final JsonDataException typeMismatch(@Nullable final Object value, final Object expected) {
-    if (value == null) {
-      return new JsonDataException("Expected " + expected + " but was null at path " + getPath());
-    }
-    else {
-      return new JsonDataException("Expected " + expected + " but was " + value + ", a " +
-                                   value.getClass().getName() + ", at path " + getPath());
-    }
-  }
-
-
-  /**
-   * Returns the value of the next token, consuming it. The result may be a string, number, boolean,
-   * null, map, or list, according to the JSON structure.
-   *
-   * @throws JsonDataException if the next token is not a literal value, if a JSON object has a
-   * duplicate key.
-   */
-  public final @Nullable Object readJsonValue() throws IOException {
-    switch (peek()) {
-      case BEGIN_ARRAY:
-        List<Object> list = new ArrayList<Object>();
-        beginArray();
-        while (hasNext()) {
-          list.add(readJsonValue());
-        }
-        endArray();
-        return list;
-      case BEGIN_OBJECT:
-        Map<String, Object> map = new LinkedHashMap<String, Object>();
-        beginObject();
-        while (hasNext()) {
-          String name = nextName();
-          Object value = readJsonValue();
-          Object replaced = map.put(name, value);
-          if (replaced != null) {
-            throw new JsonDataException("Map key '" + name + "' has multiple values at path "
-                                        + getPath() + ": " + replaced + " and " + value);
-          }
-        }
-        endObject();
-        return map;
-      case STRING:
-        return nextString();
-      case NUMBER:
-        return nextDouble();
-      case BOOLEAN:
-        return nextBoolean();
-      case NULL:
-        return nextNull();
-      default:
-        throw new IllegalStateException(
-          "Expected a value but was " + peek() + " at path " + getPath());
-    }
   }
 
   /**
    * Returns a <a href="http://goessner.net/articles/JsonPath/">JsonPath</a> to
    * the current location in the JSON value.
    */
-  public final String getPath() {
+  private String getPath() {
     return JsonScope.getPath(stackSize, scopes, pathNames, pathIndices);
-  }
-
-
-  /**
-   * A set of strings to be chosen with {@link #selectName} or {@link #selectString}. This prepares
-   * the encoded values of the strings so they can be read directly from the input source.
-   */
-  public static final class Options {
-    final String[] strings;
-    final okio.Options doubleQuoteSuffix;
-
-    private Options(String[] strings, okio.Options doubleQuoteSuffix) {
-      this.strings = strings;
-      this.doubleQuoteSuffix = doubleQuoteSuffix;
-    }
-
-    public static Options of(String... strings) {
-      try {
-        ByteString[] result = new ByteString[strings.length];
-        Buffer buffer = new Buffer();
-        for (int i = 0; i < strings.length; i++) {
-          JsonWriter.string(buffer, strings[i]);
-          buffer.readByte(); // Skip the leading double quote (but leave the trailing one).
-          result[i] = buffer.readByteString();
-        }
-        return new Options(strings.clone(), okio.Options.of(result));
-      } catch (IOException e) {
-        throw new AssertionError(e);
-      }
-    }
   }
 
   /**
