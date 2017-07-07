@@ -1,4 +1,4 @@
-![jcenter](https://img.shields.io/badge/_jcenter_-3.8.1.0-6688ff.png?style=flat) &#x2003; ![jcenter](https://img.shields.io/badge/_Tests_-59/59-green.png?style=flat) &#x2003; ![jcenter](https://img.shields.io/badge/_Coverage_-78%25-blue.png?style=flat)
+![jcenter](https://img.shields.io/badge/_jcenter_-3.8.1.0-6688ff.png?style=flat) &#x2003; ![jcenter](https://img.shields.io/badge/_Tests_-1/1-green.png?style=flat) &#x2003; ![jcenter](https://img.shields.io/badge/_Coverage_-36%25-blue.png?style=flat)
 # okjson
 A JSON library for the jvm and android, built on top of [okio](https://github.com/square/okio) and [moshi](https://github.com/square/moshi/).
  

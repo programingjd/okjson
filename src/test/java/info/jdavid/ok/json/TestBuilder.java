@@ -587,7 +587,7 @@ public class TestBuilder {
     final Map<String, ?> map = map(kv("iterator", Arrays.asList("a", "b", "c").iterator()),
                                    kv("enumeration", Collections.enumeration(Arrays.asList(1, 2, 3))),
                                    kv("null", null));
-    assertEquals("{\"iterator\":[\"a\",\"b\",\"c\"],\"enumeration\":[1,2,3]}",
+    assertEquals("{\"iterator\":[\"a\",\"b\",\"c\"],\"enumeration\":[1,2,3],\"null\":null}",
                  Builder.build(map));
   }
 

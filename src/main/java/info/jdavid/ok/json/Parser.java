@@ -8,9 +8,6 @@ import java.util.Map;
 
 import javax.annotation.Nullable;
 
-import com.squareup.moshi.JsonDataException;
-import com.squareup.moshi.JsonReader;
-
 import okio.Buffer;
 import okio.BufferedSource;
 
@@ -46,7 +43,7 @@ public final class Parser {
    */
   public static @Nullable <T> T parse(@Nullable final BufferedSource source) {
     if (source == null) return null;
-    final JsonReader reader = JsonReader.of(source);
+    final JsonReader reader = new JsonReader(source);
     try {
       final JsonReader.Token token = nextToken(reader);
       if (token == null) return null;

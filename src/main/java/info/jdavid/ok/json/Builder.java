@@ -8,7 +8,6 @@ import java.util.regex.Pattern;
 
 import javax.annotation.Nullable;
 
-import com.squareup.moshi.JsonWriter;
 import okio.Buffer;
 import okio.BufferedSink;
 
@@ -130,7 +129,7 @@ public class Builder {
                                       @Nullable final String indent) {
     if (map == null) return;
     if (sink == null) return;
-    final JsonWriter writer = JsonWriter.of(sink);
+    final JsonWriter writer = new JsonWriter(sink);
     if (indent != null) writer.setIndent(indent);
     try {
       writer.beginObject();
@@ -478,7 +477,7 @@ public class Builder {
                                       @Nullable final String indent) {
     if (list == null) return;
     if (sink == null) return;
-    final JsonWriter writer = JsonWriter.of(sink);
+    final JsonWriter writer = new JsonWriter(sink);
     if (indent != null) writer.setIndent(indent);
     try {
       writer.beginArray();
@@ -502,7 +501,7 @@ public class Builder {
                                       @Nullable final String indent) {
     if (iterator == null) return;
     if (sink == null) return;
-    final JsonWriter writer = JsonWriter.of(sink);
+    final JsonWriter writer = new JsonWriter(sink);
     if (indent != null) writer.setIndent(indent);
     try {
       writer.beginArray();
@@ -526,7 +525,7 @@ public class Builder {
                                       @Nullable final String indent) {
     if (enumeration == null) return;
     if (sink == null) return;
-    final JsonWriter writer = JsonWriter.of(sink);
+    final JsonWriter writer = new JsonWriter(sink);
     if (indent != null) writer.setIndent(indent);
     try {
       writer.beginArray();
